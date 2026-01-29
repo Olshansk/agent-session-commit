@@ -30,9 +30,28 @@ First, check if `AGENTS.md` exists in the project root.
    - Any patterns you've observed during this session
    - Development workflow (build, test, lint commands)
 
-**If AGENTS.md exists**, read it to understand current content.
+**If AGENTS.md exists**, read it to understand current content and proceed to Step 2.
 
-### Step 2: Analyze Session Learnings
+### Step 2: Comprehensive AGENTS.md Analysis (MANDATORY)
+
+Before proposing any changes, perform a thorough review of the existing AGENTS.md:
+
+1. **Build a Mental Map**
+   - List all major sections and their purposes
+   - Note the organizational pattern (by topic, workflow, etc.)
+
+2. **Catalog Existing Content**
+   - Key topics already covered
+   - Specific conventions documented
+   - Commands and workflows listed
+
+3. **Flag Potential Conflicts**
+   - Topics that might overlap with session learnings
+   - Sections already comprehensive (avoid duplicates)
+
+This analysis MUST inform what changes are proposed in Step 4.
+
+### Step 3: Analyze Session Learnings
 
 Review the conversation for:
 - Coding patterns and preferences discovered
@@ -42,46 +61,78 @@ Review the conversation for:
 - Debugging insights
 - Workflow preferences
 
-### Step 3: Propose Updates (REQUIRES CONFIRMATION)
+### Step 4: Propose Updates with Visual Formatting (REQUIRES CONFIRMATION)
 
 **IMPORTANT: Do NOT make any changes yet.**
 
-Present the exact proposed changes to the user in a clear format:
+Present the exact proposed changes using this visual format:
 
-1. Show what will be **added** (new sections, new bullet points)
-2. Show what will be **modified** (existing content being updated)
-3. Show the **location** in AGENTS.md where each change will go
-
-Format the proposal clearly:
-```
+```markdown
 ## Proposed Changes to AGENTS.md
 
-### Additions:
-- [Section: X] New bullet: "..."
-- [New Section: Y] ...
+> **Summary:** X additions, Y modifications, Z removals
 
-### Modifications:
-- [Section: Z] Change "old text" → "new text"
+---
+
+### ➕ Adding (X)
+
+> **Section: [Section Name]**
+> ```
+> - The new content being added
+> ```
+
+---
+
+### 🔄 Changing (Y)
+
+> **Section: [Section Name]**
+>
+> **Before:**
+> ```
+> - The old content
+> ```
+> **After:**
+> ```
+> - The new content
+> ```
+
+---
+
+### ➖ Removing (Z)
+
+> **Section: [Section Name]**
+> ```
+> - Content being removed
+> ```
+> **Reason:** [Why this is being removed]
 ```
+
+**Format requirements:**
+- Use blockquotes to create visual "boxes"
+- Include a summary line with counts
+- Use emoji prefixes: ➕ Adding, 🔄 Changing, ➖ Removing
+- Show Before/After for all modifications
+- Require a reason for all removals
 
 Then ask the user: **"Do you want me to apply these changes to AGENTS.md?"**
 
 Wait for explicit confirmation before proceeding.
 
-### Step 4: Apply Changes
+### Step 5: Apply Changes
 
 **Only after user confirms**, apply the approved changes:
 - Update AGENTS.md with the approved content
 - Merge with existing content appropriately
 
-### Step 5: Ensure CLAUDE.md Exists
+### Step 6: Ensure CLAUDE.md and GEMINI.md Exist
 
-Check if `CLAUDE.md` exists. If missing or different, create/update it with:
+Check if `CLAUDE.md` and `GEMINI.md` exist. If missing or different, create/update them.
 
+**CLAUDE.md:**
 ```markdown
 # CLAUDE.md
 
-⚠️ This file is intentionally minimal.
+This file is intentionally minimal.
 
 **Authoritative project instructions live in `AGENTS.md`.**
 
@@ -91,10 +142,27 @@ You must:
 2. Treat `AGENTS.md` as the single source of truth for all operations.
 3. Update `AGENTS.md` (not this file) when guidelines/architecture/standards change.
 
-➡️ Read now: [AGENTS.md](./AGENTS.md)
+Read now: [AGENTS.md](./AGENTS.md)
 ```
 
-### Step 6: Offer AGENTS.md Review (Optional)
+**GEMINI.md:**
+```markdown
+# GEMINI.md
+
+This file is intentionally minimal.
+
+**Authoritative project instructions live in `AGENTS.md`.**
+
+You must:
+
+1. Open and follow `AGENTS.md` before doing any work.
+2. Treat `AGENTS.md` as the single source of truth for all operations.
+3. Update `AGENTS.md` (not this file) when guidelines/architecture/standards change.
+
+Read now: [AGENTS.md](./AGENTS.md)
+```
+
+### Step 7: Offer AGENTS.md Review (Optional)
 
 After changes are committed, ask the user:
 
@@ -111,7 +179,7 @@ If the user accepts, perform a comprehensive review checking for:
 **Review Process:**
 1. Read the entire AGENTS.md carefully
 2. Build a cleanup plan with specific findings for each category
-3. Present the plan to the user showing:
+3. Present the plan to the user using the same visual format from Step 4:
    - What will be removed (with reason)
    - What will be consolidated (showing before/after)
    - What will be improved (showing before/after)
