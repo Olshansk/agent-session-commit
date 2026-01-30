@@ -1,15 +1,22 @@
 # Agent Session Commit <!-- omit in toc -->
 
-**One command to make your AI assistants share a brain.**
+**Scale your team, be it agents or humans by keep track of your team's patterns.**
 
-Capture session learnings to `AGENTS.md`, a single source of truth that works across Claude Code, Cursor, Windsurf, and Gemini.
+`AGENTS.md` is the new source of truth for your repo's structure, best practices, decisions and taste.
+
+Don't let details agent sessions go to waste. Commit them.
 
 ```mermaid
 graph LR
-    A[Code] --> B[Iterate]
-    B --> C["/agent-session-commit"]
-    C --> D[Scale Team]
+    A[Code]:::code --> B[Iterate]:::iterate
+    B --> C["/agent-session-commit"]:::commit
+    C --> D[Scale Team]:::scale
     D --> A
+
+    classDef code fill:#4CAF50,color:#fff,stroke:#388E3C
+    classDef iterate fill:#2196F3,color:#fff,stroke:#1565C0
+    classDef commit fill:#FF9800,color:#fff,stroke:#E65100
+    classDef scale fill:#9C27B0,color:#fff,stroke:#6A1B9A
 ```
 
 - [Quickstart](#quickstart)
@@ -19,6 +26,7 @@ graph LR
 - [Why This Exists](#why-this-exists)
 - [What does this plugin do?](#what-does-this-plugin-do)
 - [What Gets Captured](#what-gets-captured)
+- [Star History](#star-history)
 
 ## Quickstart
 
@@ -76,13 +84,17 @@ Best of all, we have `AGENTS.md` for this now!
 
 ```mermaid
 graph TD
-    A[Read existing AGENTS.md] --> B[Analyze session learnings]
-    B --> C[Propose changes with diff format]
-    C --> D{User confirms?}
-    D -->|Yes| E[Apply changes to AGENTS.md]
-    D -->|No| F[Done - no changes]
-    E --> G[Create CLAUDE.md / GEMINI.md if missing]
-    G --> H[Prompt to run /init]
+    A[Read existing AGENTS.md]:::action --> B[Analyze session learnings]:::action
+    B --> C[Propose changes with diff format]:::action
+    C --> D{User confirms?}:::decision
+    D -->|Yes| E[Apply changes to AGENTS.md]:::action
+    D -->|No| F[Done - no changes]:::outcome
+    E --> G[Create CLAUDE.md / GEMINI.md if missing]:::action
+    G --> H[Prompt to run /init]:::outcome
+
+    classDef action fill:#2196F3,color:#fff,stroke:#1565C0
+    classDef decision fill:#FF9800,color:#fff,stroke:#E65100
+    classDef outcome fill:#4CAF50,color:#fff,stroke:#388E3C
 ```
 
 ## What Gets Captured
