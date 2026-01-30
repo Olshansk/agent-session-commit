@@ -1,7 +1,7 @@
 {
   "name": "agent-session-commit",
   "version": "0.1.0",
-  "description": "Capture session learnings to AGENTS.md for cross-tool AI interoperability",
+  "description": "Capture session learnings and best practices to AGENTS.md to scale your human/agent team.",
   "author": {
     "name": "Daniel Olshansky",
     "url": "https://github.com/olshansky"

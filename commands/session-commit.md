@@ -1,5 +1,5 @@
 ---
-description: Capture learnings from the current session and update AGENTS.md
+description: Capture learnings from the current session and update`AGENTS.md`
 allowed-tools:
   - Read
   - Write
@@ -11,124 +11,28 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# Session Commit
+# Session Commit <!-- omit in toc -->
 
-Analyze the current conversation to extract valuable learnings and update the project's AGENTS.md file.
+Analyze the current conversation to extract best practices and/or valuable learnings to the project's`AGENTS.md` file. This is a mechanism to scale your human/agent team.
+
+- [Instructions](#instructions)
+  - [Step 1: Ensure CLAUDE.md and GEMINI.md Exist](#step-1-ensure-claudemd-and-geminimd-exist)
+  - [Step 2: Check for `AGENTS.md`](#step-2-check-for-agentsmd)
+  - [Step 3: Comprehensive `AGENTS.md` Analysis (MANDATORY)](#step-3-comprehensive-agentsmd-analysis-mandatory)
+  - [Step 4: Analyze Session Learnings](#step-4-analyze-session-learnings)
+  - [Step 5: Propose Updates with Visual Formatting (REQUIRES CONFIRMATION)](#step-5-propose-updates-with-visual-formatting-requires-confirmation)
+  - [Step 6: Apply Changes](#step-6-apply-changes)
+  - [Step 7: Offer `AGENTS.md` Review (Optional)](#step-7-offer-agentsmd-review-optional)
+- [Tips](#tips)
 
 ## Instructions
 
-### Step 1: Check for AGENTS.md
+### Step 1: Ensure CLAUDE.md and GEMINI.md Exist
 
-First, check if `AGENTS.md` exists in the project root.
-
-**If AGENTS.md is missing**, initialize it:
-1. Analyze the project structure (package.json, pyproject.toml, Cargo.toml, etc.)
-2. Create `AGENTS.md` with:
-   - Project name and brief description
-   - Key directories and their purposes
-   - Tech stack and dependencies
-   - Any patterns you've observed during this session
-   - Development workflow (build, test, lint commands)
-
-**If AGENTS.md exists**, read it to understand current content and proceed to Step 2.
-
-### Step 2: Comprehensive AGENTS.md Analysis (MANDATORY)
-
-Before proposing any changes, perform a thorough review of the existing AGENTS.md:
-
-1. **Build a Mental Map**
-   - List all major sections and their purposes
-   - Note the organizational pattern (by topic, workflow, etc.)
-
-2. **Catalog Existing Content**
-   - Key topics already covered
-   - Specific conventions documented
-   - Commands and workflows listed
-
-3. **Flag Potential Conflicts**
-   - Topics that might overlap with session learnings
-   - Sections already comprehensive (avoid duplicates)
-
-This analysis MUST inform what changes are proposed in Step 4.
-
-### Step 3: Analyze Session Learnings
-
-Review the conversation for:
-- Coding patterns and preferences discovered
-- Architecture decisions made
-- Gotchas or pitfalls encountered
-- Project conventions established
-- Debugging insights
-- Workflow preferences
-
-### Step 4: Propose Updates with Visual Formatting (REQUIRES CONFIRMATION)
-
-**IMPORTANT: Do NOT make any changes yet.**
-
-Present the exact proposed changes using this visual format:
-
-```markdown
-## Proposed Changes to AGENTS.md
-
-> **Summary:** X additions, Y modifications, Z removals
-
----
-
-### ➕ Adding (X)
-
-> **Section: [Section Name]**
-> ```
-> - The new content being added
-> ```
-
----
-
-### 🔄 Changing (Y)
-
-> **Section: [Section Name]**
->
-> **Before:**
-> ```
-> - The old content
-> ```
-> **After:**
-> ```
-> - The new content
-> ```
-
----
-
-### ➖ Removing (Z)
-
-> **Section: [Section Name]**
-> ```
-> - Content being removed
-> ```
-> **Reason:** [Why this is being removed]
-```
-
-**Format requirements:**
-- Use blockquotes to create visual "boxes"
-- Include a summary line with counts
-- Use emoji prefixes: ➕ Adding, 🔄 Changing, ➖ Removing
-- Show Before/After for all modifications
-- Require a reason for all removals
-
-Then ask the user: **"Do you want me to apply these changes to AGENTS.md?"**
-
-Wait for explicit confirmation before proceeding.
-
-### Step 5: Apply Changes
-
-**Only after user confirms**, apply the approved changes:
-- Update AGENTS.md with the approved content
-- Merge with existing content appropriately
-
-### Step 6: Ensure CLAUDE.md and GEMINI.md Exist
-
-Check if `CLAUDE.md` and `GEMINI.md` exist. If missing or different, create/update them.
+Check if `CLAUDE.md` and `GEMINI.md` exist in the project root. If missing or empty, create them using the templates below.
 
 **CLAUDE.md:**
+
 ```markdown
 # CLAUDE.md
 
@@ -146,6 +50,7 @@ Read now: [AGENTS.md](./AGENTS.md)
 ```
 
 **GEMINI.md:**
+
 ```markdown
 # GEMINI.md
 
@@ -162,36 +67,133 @@ You must:
 Read now: [AGENTS.md](./AGENTS.md)
 ```
 
-### Step 7: Offer AGENTS.md Review (Optional)
+### Step 2: Check for `AGENTS.md`
 
-After changes are committed, ask the user:
+Check if `AGENTS.md` exists in the project root.
 
-**"Would you like me to review the entire AGENTS.md for cleanup opportunities?"**
+**If `AGENTS.md` exists**, read it to understand current content and proceed to Step 3.
 
-If the user accepts, perform a comprehensive review checking for:
+**If `AGENTS.md` is missing**, use the `/init` command to create it. You will need to move the contents of `CLAUDE.md` to `AGENTS.md` and update `CLAUDE.md` as described in Step 1.
 
-1. **Duplicates**: Same or near-identical instructions in multiple places
-2. **Redundancy**: Overlapping guidance that could be consolidated
-3. **Stale/deprecated content**: References to old patterns, removed files, or outdated practices
-4. **Consolidation opportunities**: Related items scattered across sections that belong together
-5. **Improvement opportunities**: Unclear instructions, missing context, or verbose content that could be tightened
+### Step 3: Comprehensive `AGENTS.md` Analysis (MANDATORY)
 
-**Review Process:**
-1. Read the entire AGENTS.md carefully
-2. Build a cleanup plan with specific findings for each category
-3. Present the plan to the user using the same visual format from Step 4:
-   - What will be removed (with reason)
-   - What will be consolidated (showing before/after)
-   - What will be improved (showing before/after)
-4. **Wait for explicit confirmation** before making any changes
-5. Apply only the approved changes
+Before proposing any changes, perform a thorough review of the existing `AGENTS.md`:
 
-**CRITICAL**: Never delete content without showing it to the user first. The goal is cleanup, not loss of information.
+1. **Build a Mental Map**
+   - List all major sections and their purposes
+   - Note the organizational pattern (by topic, workflow, etc.)
+
+2. **Catalog Existing Content**
+   - Key topics already covered
+   - Specific conventions documented
+   - Commands and workflows listed
+
+3. **Flag Potential Conflicts**
+   - Topics that might overlap with session learnings
+   - Sections already comprehensive (avoid duplicates)
+
+This analysis MUST inform what changes are proposed in Step 5.
+
+### Step 4: Analyze Session Learnings
+
+Review the conversation for:
+
+- Coding patterns and preferences discovered
+- Architecture decisions made
+- Gotchas or pitfalls encountered
+- Project conventions established
+- Debugging insights
+- Workflow preferences
+- Anything that would be useful for another AI agent or human developer to know to be productive in this project
+
+### Step 5: Propose Updates with Visual Formatting (REQUIRES CONFIRMATION)
+
+**IMPORTANT: Do NOT make any changes yet.**
+
+Present the exact proposed changes using this visual format:
+
+````markdown
+## Proposed Changes to`AGENTS.md`
+
+> **Summary:** X additions, Y modifications, Z removals
+
+---
+
+### ➕ Additions (X)
+
+> **Section: [Section Name]**
+>
+> ```diff
+> + The new content being added
+> ```
+
+---
+
+### Modifications (Y)
+
+> **Section: [Section Name]**
+>
+> **Before:**
+>
+> ```diff
+> - The old content
+> ```
+>
+> **After:**
+>
+> ```diff
+> + The new content
+> ```
+
+---
+
+### ❌ Removals (Z)
+
+> **Section: [Section Name]**
+>
+> ```diff
+> - Content being removed
+> ```
+>
+> **Reason:** [Why this is being removed]
+````
+
+**Format requirements:**
+
+- Use blockquotes to create visual "boxes"
+- Include a summary line with counts
+- Use `diff` code blocks: `+` prefix for additions (green), `-` prefix for removals (red)
+- Show Before/After for all modifications
+- Require a reason for all removals
+
+Then ask the user: **"Do you want me to apply these changes to `AGENTS.md`?"**
+
+Wait for explicit confirmation before proceeding.
+
+### Step 6: Apply Changes
+
+**Only after user confirms**, apply the approved changes:
+
+- Update `AGENTS.md` with the approved content
+- Merge with existing content appropriately
+
+### Step 7: Offer `AGENTS.md` Review (Optional)
+
+After changes are applied, ask: **"Would you like me to review the entire `AGENTS.md` for cleanup opportunities?"**
+
+If accepted, review for:
+
+- **Duplicates** — same or near-identical instructions in multiple places
+- **Stale content** — references to old patterns, removed files, or outdated practices
+- **Consolidation** — related items scattered across sections that belong together
+- **Clarity** — unclear instructions or verbose content that could be tightened
+
+Present findings using the same visual format from Step 5. **Wait for explicit confirmation** before applying any cleanup changes.
 
 ## Tips
 
 - If no meaningful learnings in this session, say so - don't force updates
-- Prefer bullet points over paragraphs in AGENTS.md
+- Prefer bullet points over paragraphs in `AGENTS.md`
 - Include specific file paths when referencing project structure
-- Avoid duplicating information already in AGENTS.md
+- Avoid duplicating information already in `AGENTS.md`
 - When reviewing, err on the side of keeping content if unsure
