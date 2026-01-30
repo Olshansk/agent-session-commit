@@ -2,7 +2,7 @@
 
 **One command to make your AI assistants share a brain.**
 
-Capture session learnings to `AGENTS.md`—a single source of truth that works across Claude Code, Cursor, Windsurf, and Gemini.
+Capture session learnings to `AGENTS.md`, a single source of truth that works across Claude Code, Cursor, Windsurf, and Gemini.
 
 ```mermaid
 graph LR
@@ -15,6 +15,7 @@ graph LR
 - [Quickstart](#quickstart)
   - [Installation](#installation)
   - [Usage](#usage)
+  - [Uninstall](#uninstall)
 - [Why This Exists](#why-this-exists)
 - [What does this plugin do?](#what-does-this-plugin-do)
 - [What Gets Captured](#what-gets-captured)
@@ -22,6 +23,9 @@ graph LR
 ## Quickstart
 
 ### Installation
+
+> [!NOTE]
+> After installing, restart Claude Code for the plugin to take effect.
 
 ```bash
 # Open claude
@@ -34,23 +38,30 @@ graph LR
 /plugin install agent-session-commit@olshansk
 ```
 
-> [!NOTE]
-> After installing, restart Claude Code for the plugin to take effect.
-
 **Update:**
 
 ```bash
-/plugin update agent-session-commit@cc-marketplace`
+/plugin update agent-session-commit@olshansk
 ```
 
-**Auto-Update:** Run `/plugin` → Select Marketplaces → Choose cc-marketplace → Enable auto-update
+**Auto-Update:** Run `/plugin` → Select Marketplaces → Choose olshansk → Enable auto-update
 
 ### Usage
 
-Run this at the end of a coding session to capture what you learned or best practices you wanto maintain for future session.
+Run this at the end of a coding session to capture what you learned or best practices you want to maintain for future sessions.
 
 ```bash
 /agent-session-commit
+```
+
+### Uninstall
+
+```bash
+# Remove the plugin
+/plugin uninstall agent-session-commit
+
+# Remove the marketplace (optional)
+/plugin marketplace remove olshansk
 ```
 
 ## Why This Exists
@@ -63,15 +74,16 @@ Best of all, we have `AGENTS.md` for this now!
 
 ## What does this plugin do?
 
-1. Reviews existing AGENTS.md to avoid duplicates
-2. Analyzes session for valuable learnings
-3. Proposes changes with `diff` formatting:
-   - Additions in green (`+`)
-   - Modifications with before/after
-   - Removals in red (`-`)
-4. Waits for your confirmation
-5. Creates CLAUDE.md/GEMINI.md pointing to AGENTS.md (if missing)
-6. Prompts to run `/init` to reload configuration
+```mermaid
+graph TD
+    A[Read existing AGENTS.md] --> B[Analyze session learnings]
+    B --> C[Propose changes with diff format]
+    C --> D{User confirms?}
+    D -->|Yes| E[Apply changes to AGENTS.md]
+    D -->|No| F[Done - no changes]
+    E --> G[Create CLAUDE.md / GEMINI.md if missing]
+    G --> H[Prompt to run /init]
+```
 
 ## What Gets Captured
 
