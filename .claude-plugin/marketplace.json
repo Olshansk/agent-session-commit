@@ -1,0 +1,28 @@
+{
+  "name": "agent-session-commit",
+  "owner": {
+    "name": "Daniel Olshansky"
+  },
+  "metadata": {
+    "description": "Capture session learnings to AGENTS.md for cross-tool AI interoperability"
+  },
+  "plugins": [
+    {
+      "name": "agent-session-commit",
+      "source": ".",
+      "description": "Capture session learnings and best practices to AGENTS.md to scale your human/agent team.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Daniel Olshansky"
+      },
+      "category": "workflow",
+      "tags": [
+        "agents",
+        "documentation",
+        "knowledge-base",
+        "cross-tool",
+        "session"
+      ]
+    }
+  ]
+}
