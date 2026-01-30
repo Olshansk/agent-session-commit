@@ -9,7 +9,10 @@
   "plugins": [
     {
       "name": "agent-session-commit",
-      "source": ".",
+      "source": {
+        "source": "github",
+        "repo": "olshansk/agent-session-commit"
+      },
       "description": "Capture session learnings and best practices to AGENTS.md to scale your human/agent team.",
       "version": "0.1.0",
       "author": {
