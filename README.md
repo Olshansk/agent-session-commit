@@ -7,7 +7,7 @@ Capture session learnings to `AGENTS.md`—a single source of truth that works a
 ```mermaid
 graph LR
     A[Code] --> B[Iterate]
-    B --> C[/agent-session-commit]
+    B --> C["/agent-session-commit"]
     C --> D[Scale Team]
     D --> A
 ```
@@ -81,3 +81,7 @@ Best of all, we have `AGENTS.md` for this now!
 | Architecture | Why things are structured a certain way |
 | Gotchas      | Pitfalls discovered during development  |
 | Debugging    | What to check when things break         |
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Olshansk/agent-session-commit&type=date&legend=top-left)](https://www.star-history.com/#Olshansk/agent-session-commit&type=date&legend=top-left)
