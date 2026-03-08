@@ -196,11 +196,13 @@ swiftlint --fix
 
 ## Custom Skills
 
-**IMPORTANT:** Check the tool's skills directory for reusable skill definitions before starting relevant tasks.
+**Source of truth:** `~/workspace/agent-skills/skills/` is the canonical location for all skills.
 
-Skills directories by tool:
-- Claude: `~/.claude/skills/`
-- Codex: `~/.codex/skills/`
+- When asked to update, edit, or create a skill, **always work in `~/workspace/agent-skills/skills/<skill-name>/`** regardless of the current working directory
+- Runtime path `~/.claude/skills/` contains symlinks back to the repo (via `make link-skills`)
+- Edits in the repo propagate instantly through symlinks — no copy step needed
+
+> **After `npx skills add olshansk/agent-skills`:** always run `make link-skills` in `~/workspace/agent-skills` to restore direct symlinks. npx creates copies that break the live-edit flow.
 
 Each skill directory contains a `SKILL.md` with YAML frontmatter. All `cmd-*` skills have `disable-model-invocation: true` (user invokes manually via `/cmd-*`).
 
@@ -222,7 +224,6 @@ Each skill directory contains a `SKILL.md` with YAML frontmatter. All `cmd-*` sk
 - `cmd-scope-sweep` - Final pass to identify missed items and risks
 - `cmd-rfc-review` - Review RFCs using SCQA framework
 - `cmd-chain-halt-code-reviewer` - Review protocol code for chain halt risks
-- `cmd-mermaid-diagram` - Generate Mermaid flowcharts and sequence diagrams
 - `cmd-rss-feed-generator` - Generate Python RSS feed scrapers
 - `cmd-idiot-proof-docs` - Simplify documentation for clarity
 - `cmd-gp-issue` - Create GitHub issues from conversation context
