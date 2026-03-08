@@ -18,12 +18,16 @@
 
 ## Source of Truth
 
-This repo is the **canonical source** for all skills, regardless of which directory you're working in.
+| Skill type | Source of truth | Installed via |
+|---|---|---|
+| **Your skills** | `~/workspace/agent-skills/skills/` (this repo) | `make link-skills` |
+| **Third-party skills** | `~/.agents/skills/` | `npx skills add` |
 
-- **Edit here** → symlinks in `~/.claude/skills/` propagate changes instantly (via `make link-skills`)
-- **Never edit** skills directly in `~/.claude/skills/` — those are symlinks back to this repo
-- **After `npx skills add`**: the install creates real copies, destroying symlinks. Re-run `make link-skills` to restore them.
-- **Gemini & Codex**: `make share-skills` symlinks skills to `~/.gemini/antigravity/skills/` and `~/.codex/skills/`
+- **Edit your skills here** → symlinks in `~/.claude/skills/` propagate changes instantly
+- **Never edit** skills directly in `~/.claude/skills/` — those are symlinks
+- `make link-skills` symlinks into `~/.claude/skills/`, `~/.gemini/antigravity/skills/`, and `~/.codex/skills/`
+
+> **After `npx skills add olshansk/agent-skills`:** always run `make link-skills` to restore direct symlinks. npx creates copies that break the live-edit flow. Third-party skills are unaffected.
 
 ## Project Structure
 
@@ -35,7 +39,7 @@ This repo is the **canonical source** for all skills, regardless of which direct
   - `configs/` — tool configuration snapshots (Claude, Gemini, Codex)
 - `.github/workflows/skills-validate.yml` — CI workflow for skill validation
 - `index.html` — root GitHub Pages dashboard
-- `Makefile` — local orchestration (link-skills, share-skills, sync-all)
+- `Makefile` — local orchestration (link-skills, sync)
 
 ## Dashboard Workflow
 
@@ -51,9 +55,9 @@ This repo is the **canonical source** for all skills, regardless of which direct
 | Tool        | Install path                                   | Local setup          |
 | ----------- | ---------------------------------------------- | -------------------- |
 | Claude Code | `npx skills add olshansk/agent-skills`         | `make link-skills`   |
-| Codex CLI   | `npx skills add olshansk/agent-skills`         | `make share-skills`  |
-| Gemini CLI  | `npx skills add olshansk/agent-skills`         | `make share-skills`  |
-| OpenCode    | `npx skills add olshansk/agent-skills`         | `make share-skills`  |
+| Codex CLI   | `npx skills add olshansk/agent-skills`         | `make link-skills`  |
+| Gemini CLI  | `npx skills add olshansk/agent-skills`         | `make link-skills`  |
+| OpenCode    | `npx skills add olshansk/agent-skills`         | `make link-skills`  |
 
 ## Skill Authoring Standards
 
