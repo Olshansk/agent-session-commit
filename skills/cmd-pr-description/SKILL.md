@@ -10,15 +10,18 @@ Generate a concise PR description by analyzing the diff against a base branch.
 
 Output the result in a markdown file named `PR_DESCRIPTION.md`.
 
+Copy to clipboard: `cat PR_DESCRIPTION.md | pbcopy`
+
 - [Instructions](#instructions)
   - [1. Determine the base branch](#1-determine-the-base-branch)
   - [2. Analyze the changes against the default branch](#2-analyze-the-changes-against-the-default-branch)
   - [3. Generate the description using the format below](#3-generate-the-description-using-the-format-below)
+  - [4. Offer to update the GitHub PR](#4-offer-to-update-the-github-pr)
 - [Output Format](#output-format)
 - [Section Rules](#section-rules)
   - [tl;dr](#tldr)
   - [Summary](#summary)
-  - [Table Diff](#table-diff)
+  - [Feature Diff](#feature-diff)
   - [Details](#details)
   - [General Details](#general-details)
 - [Example Output](#example-output)
@@ -60,6 +63,16 @@ git log $BASE_BRANCH..HEAD --oneline
 
 ### 3. Generate the description using the format below
 
+### 4. Offer to update the GitHub PR
+
+After writing `PR_DESCRIPTION.md`, use `AskUserQuestion` to ask the user if they want to update the GitHub PR description automatically.
+
+If yes, run:
+
+```bash
+gh pr edit --body "$(cat PR_DESCRIPTION.md)"
+```
+
 ## Output Format
 
 ```markdown
@@ -71,7 +84,7 @@ _tl;dr This is a single sentence summarizing the most important outcome of this 
 - ...
 - ...
 
-## Table Diff
+## Feature Diff
 
 | Component                          | Before                                     | After                                    |
 | ---------------------------------- | ------------------------------------------ | ---------------------------------------- |
@@ -110,12 +123,12 @@ _tl;dr This is a single sentence summarizing the most important outcome of this 
 - 2-5 bullets, one per meaningful change (not per file)
 - Min (2) and max (5) are hard floors and ceilings per section
 - Bold phrase answers "what does the user/operator get?"
-- Plain language after the dash — one sentence, no jargon
-- No implementation details — reviewers will read the diff for that
-- No fluff — skip "minor cleanup", "refactor", "update docs" unless they deliver real value
+- Plain language after the dash: one sentence, no jargon
+- No implementation details: reviewers will read the diff for that
+- No fluff: skip "minor cleanup", "refactor", "update docs" unless they deliver real value
 - Start from the most impactful change and work down
 
-### Table Diff
+### Feature Diff
 
 - **Always include this section**
 - Should have anywhere from 1-10 rows depending on the size of the PR
@@ -148,11 +161,11 @@ _tl;dr Users can now log in with email/password and stay authenticated across br
 
 ## Summary
 
-- **Session-based login** - Users authenticate with email/password and maintain sessions across browser restarts
-- **Faster auth checks** - Session lookups use an indexed token column instead of scanning the full users table
-- **Remember-me support** - Users can opt into 30-day sessions instead of the default 24-hour expiry
+- **Session-based login**: Users authenticate with email/password and maintain sessions across browser restarts
+- **Faster auth checks**: Session lookups use an indexed token column instead of scanning the full users table
+- **Remember-me support**: Users can opt into 30-day sessions instead of the default 24-hour expiry
 
-## Table Diff
+## Feature Diff
 
 | Component        | Before                     | After                                           |
 | ---------------- | -------------------------- | ----------------------------------------------- |

@@ -16,7 +16,7 @@ help: ## Prints all the targets in the Makefile
 	@echo "$(BOLD)$(CYAN)Agent Skills Repository$(RESET)"
 	@echo ""
 	@echo "$(BOLD)=== Skills ===$(RESET)"
-	@grep -h -E '^(link|list).*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
+	@grep -h -E '^(link|list|publish).*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
 	@echo ""
 	@echo "$(BOLD)=== Backup ===$(RESET)"
 	@grep -h -E '^sync.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
@@ -99,6 +99,14 @@ sync: ## Backup tool configs into personal/configs/ (one-way snapshot)
 	@if [ -d ~/.codex/rules ]; then rsync -a --delete --exclude '.git' ~/.codex/rules personal/configs/codex/; else rm -rf personal/configs/codex/rules; fi
 	@[ -f ~/.codex/config.toml ] && cp ~/.codex/config.toml personal/configs/codex/ || true
 	@echo "Done"
+
+.PHONY: publish
+publish: ## Install all skills globally via npx (for skills.sh telemetry), then restore local symlinks
+	@echo "Installing all skills globally via npx..."
+	@cd ~ && npx skills add olshansk/agent-skills --all -g -y
+	@echo ""
+	@echo "Restoring local symlinks..."
+	@$(MAKE) link-skills
 
 ########################
 ### Info             ###
