@@ -9,6 +9,42 @@ Thumbs.db
 .vscode/
 .idea/
 
+# npx skills add (local install artifacts)
+# Use `npx skills add olshansk/agent-skills --all -g -y` to install globally
+.agents/
+.agent/
+.claude/skills/
+skills-lock.json
+
+# Agent tool directories (created by npx skills add --all without -g)
+.adal/
+.augment/
+.codebuddy/
+.commandcode/
+.continue/
+.cortex/
+.crush/
+.factory/
+.goose/
+.iflow/
+.junie/
+.kilocode/
+.kiro/
+.kode/
+.mcpjam/
+.mux/
+.neovate/
+.openhands/
+.pi/
+.pochi/
+.qoder/
+.qwen/
+.roo/
+.trae/
+.vibe/
+.windsurf/
+.zencoder/
+
 # Local configuration (user-specific settings)
 .claude/*.local.md
 
