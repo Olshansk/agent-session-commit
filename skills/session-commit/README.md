@@ -47,12 +47,12 @@ flowchart LR
 
 Use this if you are not using `npx skills add` yet.
 
-| Tool        | Install                                                                                                                                                                             | Run command                    |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| Codex CLI   | `mkdir -p ~/.codex/prompts && curl -sO --output-dir ~/.codex/prompts https://raw.githubusercontent.com/olshansk/agent-skills/main/skills/session-commit/commands/session-commit.md`                   | `/prompts:session-commit`      |
-| Claude Code | `/plugin marketplace add olshansk/agent-skills` then `/plugin install agent-skills@olshansk`                                                                                      | `/agent-skills:session-commit` |
-| Gemini CLI  | `gemini extensions install https://github.com/olshansk/agent-skills`                                                                                                               | `/session-commit`              |
-| OpenCode    | `mkdir -p ~/.config/opencode/commands && curl -sO --output-dir ~/.config/opencode/commands https://raw.githubusercontent.com/olshansk/agent-skills/main/skills/session-commit/commands/session-commit.md` | `/session-commit`              |
+| Tool        | Install                                                                                          | Run command                    |
+| ----------- | ------------------------------------------------------------------------------------------------ | ------------------------------ |
+| Claude Code | `/plugin marketplace add olshansk/agent-skills` then `/plugin install agent-skills@olshansk`     | `/agent-skills:session-commit` |
+| Codex CLI   | `npx skills add olshansk/agent-skills`                                                           | `/session-commit`              |
+| Gemini CLI  | `gemini extensions install https://github.com/olshansk/agent-skills`                             | `/session-commit`              |
+| OpenCode    | `npx skills add olshansk/agent-skills`                                                           | `/session-commit`              |
 
 <details>
 <summary><h3 id="codex-cli">Codex CLI</h3></summary>
@@ -60,26 +60,13 @@ Use this if you are not using `npx skills add` yet.
 Install:
 
 ```bash
-mkdir -p ~/.codex/prompts
-curl -sO --output-dir ~/.codex/prompts https://raw.githubusercontent.com/olshansk/agent-skills/main/skills/session-commit/commands/session-commit.md
+npx skills add olshansk/agent-skills
 ```
 
 Run:
 
 ```bash
-/prompts:session-commit
-```
-
-Update:
-
-```bash
-curl -sO --output-dir ~/.codex/prompts https://raw.githubusercontent.com/olshansk/agent-skills/main/skills/session-commit/commands/session-commit.md
-```
-
-Remove:
-
-```bash
-rm ~/.codex/prompts/session-commit.md
+/session-commit
 ```
 
 </details>
@@ -155,26 +142,13 @@ gemini extensions uninstall agent-skills
 Install:
 
 ```bash
-mkdir -p ~/.config/opencode/commands
-curl -sO --output-dir ~/.config/opencode/commands https://raw.githubusercontent.com/olshansk/agent-skills/main/skills/session-commit/commands/session-commit.md
+npx skills add olshansk/agent-skills
 ```
 
 Run:
 
 ```bash
 /session-commit
-```
-
-Update:
-
-```bash
-curl -sO --output-dir ~/.config/opencode/commands https://raw.githubusercontent.com/olshansk/agent-skills/main/skills/session-commit/commands/session-commit.md
-```
-
-Remove:
-
-```bash
-rm ~/.config/opencode/commands/session-commit.md
 ```
 
 </details>

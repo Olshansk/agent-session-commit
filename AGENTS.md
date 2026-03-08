@@ -1,6 +1,7 @@
 # AGENTS.md <!-- omit in toc -->
 
 - [Project Overview](#project-overview)
+- [Source of Truth](#source-of-truth)
 - [Project Structure](#project-structure)
 - [Dashboard Workflow](#dashboard-workflow)
 - [Supported Tools](#supported-tools)
@@ -14,6 +15,15 @@
 - Follows the [Agent Skills](https://agentskills.io/home) pattern, inspired by [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills)
 - Live dashboard: [skills-dashboard.olshansky.info](https://skills-dashboard.olshansky.info/)
 - Skills: `session-commit`, `skills-dashboard`
+
+## Source of Truth
+
+This repo is the **canonical source** for all skills, regardless of which directory you're working in.
+
+- **Edit here** → symlinks in `~/.claude/skills/` propagate changes instantly (via `make link-skills`)
+- **Never edit** skills directly in `~/.claude/skills/` — those are symlinks back to this repo
+- **After `npx skills add`**: the install creates real copies, destroying symlinks. Re-run `make link-skills` to restore them.
+- **Gemini & Codex**: `make share-skills` symlinks skills to `~/.gemini/antigravity/skills/` and `~/.codex/skills/`
 
 ## Project Structure
 
@@ -38,12 +48,12 @@
 
 ## Supported Tools
 
-| Tool        | Preferred install path                         | Fallback path in this repo |
-| ----------- | ---------------------------------------------- | -------------------------- |
-| Claude Code | `npx skills add olshansk/agent-skills`         | `.claude-plugin/`          |
-| Codex CLI   | `npx skills add olshansk/agent-skills`         | `skills/session-commit/commands/session-commit.md` |
-| Gemini CLI  | `npx skills add olshansk/agent-skills`         | `skills/session-commit/commands/session-commit.toml` |
-| OpenCode    | `npx skills add olshansk/agent-skills`         | `skills/session-commit/commands/session-commit.md` |
+| Tool        | Install path                                   | Local setup          |
+| ----------- | ---------------------------------------------- | -------------------- |
+| Claude Code | `npx skills add olshansk/agent-skills`         | `make link-skills`   |
+| Codex CLI   | `npx skills add olshansk/agent-skills`         | `make share-skills`  |
+| Gemini CLI  | `npx skills add olshansk/agent-skills`         | `make share-skills`  |
+| OpenCode    | `npx skills add olshansk/agent-skills`         | `make share-skills`  |
 
 ## Skill Authoring Standards
 
@@ -55,7 +65,7 @@ skills/<skill-name>/
   scripts/        # optional
   references/     # optional
   assets/         # optional
-  commands/       # optional — legacy per-tool command files
+  commands/       # optional — per-tool command overrides
 ```
 
 `SKILL.md` requirements:
