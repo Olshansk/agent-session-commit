@@ -42,6 +42,9 @@ EXPORT_OPTIONS_PLIST ?= ios/ExportOptions.plist
 # Linting
 FIX ?= false
 
+# Load .env if present
+-include .env
+
 # Export env vars to sub-processes
 .EXPORT_ALL_VARIABLES:
 
@@ -96,6 +99,7 @@ help: ## Show all available targets
 	@printf "$(BOLD)=== 🏗️  Flutter Build ===$(RESET)\n"
 	@printf "$(CYAN)%-30s$(RESET) %s\n" "flutter-build-ios" "Build for iOS simulator"
 	@printf "$(CYAN)%-30s$(RESET) %s\n" "flutter-build-ipa" "Build IPA for App Store"
+	@printf "$(CYAN)%-30s$(RESET) %s\n" "flutter-export-ipa" "Re-export IPA from existing archive"
 	@printf "$(CYAN)%-30s$(RESET) %s\n" "flutter-build-apk" "Build debug APK for Android"
 	@printf "$(CYAN)%-30s$(RESET) %s\n" "flutter-build-aab" "Build AAB for Google Play Store"
 	@printf "\n"

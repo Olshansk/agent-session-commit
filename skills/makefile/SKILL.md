@@ -79,7 +79,9 @@ Copy from `templates/flutter-modules/` to your project's `makefiles/` directory.
 - `flutter-run-ios` auto-boots simulator and waits for it
 - `flutter-run-android` auto-launches emulator and waits for it
 - `flutter-run-device` auto-detects or uses `FLUTTER_IOS_DEVICE` / `FLUTTER_ANDROID_DEVICE`
-- `flutter-build-ipa` + `flutter-deploy-testflight` full iOS release workflow
+- `flutter-build-ipa` + `flutter-export-ipa` + `flutter-deploy-testflight` full iOS release workflow
+- `flutter-export-ipa` re-exports IPA from existing archive without rebuilding
+- `_check-asc-app` pre-flight App Store Connect validation (with ASC_API_KEY/ASC_API_ISSUER)
 - `flutter-lint FIX=true` Dart formatting with FIX pattern
 - `VERBOSE=1 make <target>` show commands for debugging
 

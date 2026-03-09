@@ -250,6 +250,7 @@ Use specific TODO prefixes to categorize action items:
 - `TODO_CONSIDERATION:` - Design decisions that may need revisiting
 - `TODO_TECHDEBT:` - Technical debt to address later
 - `TODO_IN_THIS_PR:` - Tasks to complete within the current pull request
+- `TODO_REMOVE_LATER:` - Temporary code that should be removed once a condition is met
 - `FIXME:` - Known bugs or issues that need fixing
 - `HACK:` - Temporary workarounds that should be replaced
 - `NOTE:` - Important explanations or warnings for developers
@@ -280,6 +281,24 @@ Example:
 # TODO_IDEA: Support batch operations for bulk imports
 #       Why: Users importing large datasets hit rate limits
 ```
+
+**Temporary code branches (`TODO_REMOVE_LATER`):**
+
+When adding a code branch that exists only as temporary remediation (e.g., backfilling legacy data, handling a migration edge case, supporting a deprecated path), place `TODO_REMOVE_LATER` directly above the branch entry point. Include:
+
+- **What** can be removed (the branch and any supporting helpers)
+- **When** it is safe to remove (the condition that makes it obsolete)
+- **Why** the branch exists (what legacy state or transition it handles)
+
+```python
+# TODO_REMOVE_LATER: Backfill missing widget_id for pre-v2 records — remove once
+#   all active records have been backfilled (tracked in JIRA-1234).
+#   Why: v1 records lack widget_id; this branch synthesizes one on read.
+if not record.widget_id:
+    ...
+```
+
+Do NOT use `TODO_REMOVE_LATER` for permanent behavior. Only mark branches that are genuinely temporary. If unsure whether code is temporary, use `TODO_TECHDEBT` instead.
 
 ## Response Status Tags
 
