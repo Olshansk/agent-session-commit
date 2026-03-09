@@ -12,19 +12,22 @@ Reusable skills for Claude Code, Gemini, and Codex.
 
 This repo and one third-party directory work together:
 
-| Location                                       | What it holds                                     | Role                           |
-| ---------------------------------------------- | ------------------------------------------------- | ------------------------------ |
-| `~/workspace/agent-skills/` (this repo)        | Skills (`skills/`), agent instructions (`agents/`) | **Source-of-truth**            |
-| `~/.agents/skills/`                            | Third-party skills (find-skills, vercel-\*, etc.) | Managed by `npx skills add`    |
-| `~/workspace/agent-skills/personal/configs/`   | Snapshots of tool configs                         | Read-only backup               |
+| Location                                     | What it holds                                      | Role                        |
+| -------------------------------------------- | -------------------------------------------------- | --------------------------- |
+| `~/workspace/agent-skills/` (this repo)      | Skills (`skills/`), agent instructions (`agents/`) | **Source-of-truth**         |
+| `~/.agents/skills/`                          | Third-party skills (find-skills, vercel-\*, etc.)  | Managed by `npx skills add` |
+| `~/workspace/agent-skills/personal/configs/` | Snapshots of tool configs                          | Read-only backup            |
 
 ## Symlink Map
 
 ```mermaid
 graph TB
+    classDef workspace fill:#d4e6f1,stroke:#2980b9,stroke-width:2px
+    classDef dotdir fill:#fadbd8,stroke:#e74c3c,stroke-width:2px
+
     subgraph sources["Source of Truth"]
-        repo["~/workspace/agent-skills/<br/>·  skills/*  ·  agents/*  ·  AGENTS.md  ·"]
-        thirdparty["~/.agents/skills/*"]
+        thirdparty["~/.agents/skills/*<br/>(external skills)"]
+        repo["~/workspace/agent-skills/<br/>·  skills/*  ·  agents/*  ·  AGENTS.md  ·<br/>(internal skills)"]
     end
 
     subgraph claude["~/.claude/"]
@@ -47,9 +50,9 @@ graph TB
 
     backup["~/workspace/configs/<br/>(read-only backup)"]
 
-    repo -->|"symlink"| claude_skills
-    repo -->|"symlink"| gemini_skills
-    repo -->|"symlink"| codex_skills
+    repo -->|"symlink (overwrite)"| claude_skills
+    repo -->|"symlink (overwrite)"| gemini_skills
+    repo -->|"symlink (overwrite)"| codex_skills
     repo -->|"AGENTS.md"| claude_md
     repo -->|"MEMORIES.md"| gemini_md
     repo -->|"AGENTS.md"| codex_md
@@ -61,6 +64,9 @@ graph TB
     claude -.->|"make sync"| backup
     gemini -.->|"make sync"| backup
     codex -.->|"make sync"| backup
+
+    class repo,backup workspace
+    class thirdparty,claude_skills,claude_md,gemini_skills,gemini_md,codex_skills,codex_md dotdir
 ```
 
 ## Makefile Workflows
@@ -99,10 +105,10 @@ graph LR
 
 ## npx Install & Coexistence
 
-| Skill type | Source of truth | Installed via | Symlink target |
-|---|---|---|---|
-| **Your skills** | this repo | `make link-skills` | `~/workspace/agent-skills/skills/*` |
-| **Third-party** | `~/.agents/skills/` | `npx skills add` | `~/.agents/skills/*` |
+| Skill type      | Source of truth     | Installed via      | Symlink target                      |
+| --------------- | ------------------- | ------------------ | ----------------------------------- |
+| **Your skills** | this repo           | `make link-skills` | `~/workspace/agent-skills/skills/*` |
+| **Third-party** | `~/.agents/skills/` | `npx skills add`   | `~/.agents/skills/*`                |
 
 ```mermaid
 graph TB
@@ -129,10 +135,10 @@ graph TB
 
 ## Makefile Targets
 
-| Target             | Description                                                                  |
-| ------------------ | ---------------------------------------------------------------------------- |
-| `make link-skills` | Symlink repo skills into Claude, Gemini, and Codex (repoints if needed)      |
-| `make list-skills` | List all skills with descriptions                                            |
-| `make sync`        | Backup all tool configs into `personal/configs/`                             |
-| `make test`        | Validate skill frontmatter and repo consistency                              |
-| `make status`      | Show repository status                                                       |
+| Target             | Description                                                             |
+| ------------------ | ----------------------------------------------------------------------- |
+| `make link-skills` | Symlink repo skills into Claude, Gemini, and Codex (repoints if needed) |
+| `make list-skills` | List all skills with descriptions                                       |
+| `make sync`        | Backup all tool configs into `personal/configs/`                        |
+| `make test`        | Validate skill frontmatter and repo consistency                         |
+| `make status`      | Show repository status                                                  |
