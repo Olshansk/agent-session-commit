@@ -57,26 +57,25 @@ Skills I use daily but might rename or delete in the future. I prefix them with 
 
 | Skill                          | Description                                                                          |
 | ------------------------------ | ------------------------------------------------------------------------------------ |
-| `cmd-chain-halt-code-reviewer` | Review protocol code for chain halt risks, non-determinism, and onchain behavior bugs |
-| `cmd-clean-code`               | Improve code readability without altering functionality using idiomatic best practices |
-| `cmd-code-cleanup`             | Remove dead code and duplication with a 5-phase systematic approach                   |
-| `cmd-pr-sweep`                 | Review changes for test gaps, simplification, naming consistency, reuse, and TODO quality |
-| `cmd-gh-issue`                 | Create structured GitHub issues from conversation context using `gh` CLI              |
-| `cmd-idiot-proof-docs`         | Simplify documentation for clarity and scannability with approval-gated edits         |
-| `cmd-mermaid-diagram`          | Generate and edit Mermaid flowcharts and sequence diagrams with syntax validation      |
-| `cmd-pr-build-context`         | Build high-signal PR context with diff analysis, risk assessment, and discussion questions |
-| `cmd-pr-conflict-resolver`     | Resolve merge conflicts with context-aware 3-tier classification and escalation       |
-| `cmd-pr-description`           | Generate concise PR descriptions by analyzing the diff against a base branch          |
-| `cmd-proofread`                | Proofread posts for spelling, grammar, repetition, logic, weak arguments, and broken links |
-| `cmd-pr-review-prepare`        | Prepare branch for code review by building context and identifying issues             |
-| `cmd-pr-test-plan`             | Generate manual test plans with verified commands and pass/fail criteria               |
-| `cmd-productionize`            | Transform apps into production-ready deployments with framework-specific optimization |
-| `cmd-python-stylizer`          | Analyze Python code for naming, structure, nesting, and cognitive load reduction      |
-| `cmd-rfc-review`               | Review RFCs for problem clarity, compliance, security, and performance using SCQA     |
-| `cmd-rss-feed-generator`       | Generate Python RSS feed scrapers with hourly GitHub Actions integration              |
-| `cmd-scope-sweep`              | Final pass to identify missed items, edge cases, and risks before closing scope       |
-| `debug-timeouts`               | Analyze and debug timeout hierarchies                                                 |
-| `makefile`                     | Create or improve Makefiles with templates (python-uv, fastapi, nodejs, go, flutter) |
+| [`cmd-chain-halt-code-reviewer`](skills/cmd-chain-halt-code-reviewer/SKILL.md) | Review protocol code for chain halt risks, non-determinism, and onchain behavior bugs |
+| [`cmd-clean-code`](skills/cmd-clean-code/SKILL.md) | Improve code readability without altering functionality using idiomatic best practices |
+| [`cmd-code-cleanup`](skills/cmd-code-cleanup/SKILL.md) | Remove dead code and duplication with a 5-phase systematic approach |
+| [`cmd-gh-issue`](skills/cmd-gh-issue/SKILL.md) | Create structured GitHub issues from conversation context using `gh` CLI |
+| [`cmd-idiot-proof-docs`](skills/cmd-idiot-proof-docs/SKILL.md) | Simplify documentation for clarity and scannability with approval-gated edits |
+| [`cmd-pr-build-context`](skills/cmd-pr-build-context/SKILL.md) | Build high-signal PR context with diff analysis, risk assessment, and discussion questions |
+| [`cmd-pr-conflict-resolver`](skills/cmd-pr-conflict-resolver/SKILL.md) | Resolve merge conflicts with context-aware 3-tier classification and escalation |
+| [`cmd-pr-description`](skills/cmd-pr-description/SKILL.md) | Generate concise PR descriptions by analyzing the diff against a base branch |
+| [`cmd-pr-review-prepare`](skills/cmd-pr-review-prepare/SKILL.md) | Prepare branch for code review by building context and identifying issues |
+| [`cmd-pr-sweep`](skills/cmd-pr-sweep/SKILL.md) | Review changes for test gaps, simplification, naming consistency, reuse, and TODO quality |
+| [`cmd-pr-test-plan`](skills/cmd-pr-test-plan/SKILL.md) | Generate manual test plans with verified commands and pass/fail criteria |
+| [`cmd-productionize`](skills/cmd-productionize/SKILL.md) | Transform apps into production-ready deployments with framework-specific optimization |
+| [`cmd-proofread`](skills/cmd-proofread/SKILL.md) | Proofread posts for spelling, grammar, repetition, logic, weak arguments, and broken links |
+| [`cmd-python-stylizer`](skills/cmd-python-stylizer/SKILL.md) | Analyze Python code for naming, structure, nesting, and cognitive load reduction |
+| [`cmd-rfc-review`](skills/cmd-rfc-review/SKILL.md) | Review RFCs for problem clarity, compliance, security, and performance using SCQA |
+| [`cmd-rss-feed-generator`](skills/cmd-rss-feed-generator/SKILL.md) | Generate Python RSS feed scrapers with hourly GitHub Actions integration |
+| [`cmd-scope-sweep`](skills/cmd-scope-sweep/SKILL.md) | Final pass to identify missed items, edge cases, and risks before closing scope |
+| [`makefile`](skills/makefile/SKILL.md) | Create or improve Makefiles with templates (python-uv, fastapi, nodejs, go, flutter) |
+| [`mermaid-render`](skills/mermaid-render/SKILL.md) | Render and display Mermaid diagrams inline in iTerm2 or Ghostty |
 
 ## Star History
 
@@ -87,3 +86,5 @@ Skills I use daily but might rename or delete in the future. I prefix them with 
 A live dashboard of the skills.sh ecosystem is available at **[skills-dashboard.olshansky.info](https://skills-dashboard.olshansky.info/)**.
 
 It shows publisher distribution, install counts, top skills, and the long-tail power law of adoption. Regenerate it yourself with the `skills-dashboard` skill.
+
+![Skills Dashboard](skills-dashboard.png)

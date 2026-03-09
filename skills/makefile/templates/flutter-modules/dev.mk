@@ -2,6 +2,9 @@
 ### Flutter Development  ###
 ############################
 
+# Load .env file and convert to --dart-define flags
+DART_DEFINES = $(shell [ -f .env ] && grep -v '^\#' .env | grep -v '^$$' | sed 's/^/--dart-define=/' | tr '\n' ' ')
+
 #########################
 ### Internal Checks   ###
 #########################
@@ -35,11 +38,18 @@ flutter-setup: _check-flutter ## Get Flutter deps and install iOS pods
 .PHONY: flutter-run-ios
 flutter-run-ios: _check-flutter ## Run on iOS simulator (auto-boots if needed)
 	$(call print_section,Starting Flutter on iOS simulator)
-	@open -a Simulator
 	@SIMULATOR_NAME=$$(xcrun simctl list devices booted -j 2>/dev/null | python3 -c "import sys,json; data=json.load(sys.stdin); booted=[d['name'] for devs in data.get('devices',{}).values() for d in devs if d.get('state')=='Booted']; print(booted[0] if booted else '')" 2>/dev/null); \
 	if [ -z "$$SIMULATOR_NAME" ]; then \
+		DEVICE_UDID=$$(xcrun simctl list devices available -j 2>/dev/null | python3 -c "import sys,json; data=json.load(sys.stdin); devs=[(d['udid'],d['name']) for rt,dl in data.get('devices',{}).items() if 'iOS' in rt for d in dl if d.get('isAvailable')]; print(devs[0][0] if devs else '')" 2>/dev/null); \
+		DEVICE_NAME=$$(xcrun simctl list devices available -j 2>/dev/null | python3 -c "import sys,json; data=json.load(sys.stdin); devs=[(d['udid'],d['name']) for rt,dl in data.get('devices',{}).items() if 'iOS' in rt for d in dl if d.get('isAvailable')]; print(devs[0][1] if devs else '')" 2>/dev/null); \
+		if [ -z "$$DEVICE_UDID" ]; then \
+			printf "$(RED)$(CROSS) No available iOS simulators found$(RESET)\n"; \
+			exit 1; \
+		fi; \
+		printf "$(YELLOW)Booting simulator: $$DEVICE_NAME$(RESET)\n"; \
+		xcrun simctl boot "$$DEVICE_UDID" 2>/dev/null || true; \
+		open -a Simulator; \
 		printf "$(YELLOW)Waiting for simulator to boot...$(RESET)\n"; \
-		sleep 5; \
 		while true; do \
 			SIMULATOR_NAME=$$(xcrun simctl list devices booted -j 2>/dev/null | python3 -c "import sys,json; data=json.load(sys.stdin); booted=[d['name'] for devs in data.get('devices',{}).values() for d in devs if d.get('state')=='Booted']; print(booted[0] if booted else '')" 2>/dev/null); \
 			if [ -n "$$SIMULATOR_NAME" ]; then break; fi; \
@@ -47,9 +57,11 @@ flutter-run-ios: _check-flutter ## Run on iOS simulator (auto-boots if needed)
 			sleep 2; \
 		done; \
 		printf "\n$(GREEN)$(CHECK) Simulator ready$(RESET)\n"; \
+	else \
+		open -a Simulator; \
 	fi; \
 	printf "$(CYAN)Running on: $$SIMULATOR_NAME$(RESET)\n"; \
-	cd $(FLUTTER_DIR) && flutter run -d "$$SIMULATOR_NAME"
+	cd $(FLUTTER_DIR) && flutter run $(DART_DEFINES) -d "$$SIMULATOR_NAME"
 
 .PHONY: flutter-run-android
 flutter-run-android: _check-flutter ## Run on Android emulator (auto-launches if needed)
@@ -72,7 +84,7 @@ flutter-run-android: _check-flutter ## Run on Android emulator (auto-launches if
 	done; \
 	printf "\n$(GREEN)$(CHECK) Emulator ready$(RESET)\n"; \
 	printf "$(CYAN)Running on: $$EMULATOR_ID$(RESET)\n"; \
-	cd $(FLUTTER_DIR) && flutter run -d "$$EMULATOR_ID"
+	cd $(FLUTTER_DIR) && flutter run $(DART_DEFINES) -d "$$EMULATOR_ID"
 
 .PHONY: flutter-run-device
 flutter-run-device: _check-flutter ## Run on physical device (auto-detects or uses FLUTTER_IOS_DEVICE)
@@ -90,7 +102,7 @@ flutter-run-device: _check-flutter ## Run on physical device (auto-detects or us
 		fi; \
 	fi; \
 	printf "$(CYAN)Running on device: $$DEVICE_ID$(RESET)\n"; \
-	cd $(FLUTTER_DIR) && flutter run -d "$$DEVICE_ID"
+	cd $(FLUTTER_DIR) && flutter run $(DART_DEFINES) -d "$$DEVICE_ID"
 
 .PHONY: flutter-run-device-release
 flutter-run-device-release: _check-flutter ## Run on physical device in release mode
@@ -108,7 +120,7 @@ flutter-run-device-release: _check-flutter ## Run on physical device in release 
 		fi; \
 	fi; \
 	printf "$(CYAN)Running on device: $$DEVICE_ID (release)$(RESET)\n"; \
-	cd $(FLUTTER_DIR) && flutter run --release -d "$$DEVICE_ID"
+	cd $(FLUTTER_DIR) && flutter run --release $(DART_DEFINES) -d "$$DEVICE_ID"
 
 .PHONY: flutter-devices
 flutter-devices: _check-flutter ## List all available Flutter devices

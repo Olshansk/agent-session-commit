@@ -18,9 +18,10 @@
 
 ## Source of Truth
 
-| Skill type | Source of truth | Installed via |
+| Asset type | Source of truth | Installed via |
 |---|---|---|
 | **Your skills** | `~/workspace/agent-skills/skills/` (this repo) | `make link-skills` |
+| **Agent instructions** | `~/workspace/agent-skills/agents/` (this repo) | `make link-skills` |
 | **Third-party skills** | `~/.agents/skills/` | `npx skills add` |
 
 - **Edit your skills here** → symlinks in `~/.claude/skills/` propagate changes instantly
@@ -31,6 +32,7 @@
 
 ## Project Structure
 
+- `agents/` — global agent instructions (`AGENTS.md`, `MEMORIES.md`), symlinked to `~/.claude/`, `~/.codex/`, `~/.gemini/`
 - `skills/` — installable skills
   - `session-commit`, `skills-dashboard` — **Polished** (official distribution)
   - `cmd-*` — **Personal** (local use, slash-command style)
@@ -84,6 +86,14 @@ Scripts:
 - Use `scripts/` for reusable or complex command logic
 - Scripts must be non-interactive and safe for agent execution
 - Prefer structured stdout and diagnostic stderr in scripts
+
+## Adding a New Skill
+
+When a new skill is added to `skills/`:
+
+1. Add a hyperlinked row to the appropriate table in `README.md` (link format: `[skill-name](skills/skill-name/SKILL.md)`)
+2. Keep the table sorted alphabetically
+3. Run `make link-skills` to create symlinks
 
 ## Documentation Standards
 

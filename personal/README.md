@@ -10,65 +10,65 @@ Reusable skills for Claude Code, Gemini, and Codex.
 
 ## Architecture
 
-Three repos and one third-party directory work together:
+This repo and one third-party directory work together:
 
 | Location                                       | What it holds                                     | Role                           |
 | ---------------------------------------------- | ------------------------------------------------- | ------------------------------ |
-| `~/workspace/agent-skills/skills/` (this repo) | 21 reusable skills                                | **SoT for skills**             |
-| `~/workspace/configs/agents/`                  | `AGENTS.md`, `MEMORIES.md`                        | **SoT for agent instructions** |
+| `~/workspace/agent-skills/` (this repo)        | Skills (`skills/`), agent instructions (`agents/`) | **Source-of-truth**            |
 | `~/.agents/skills/`                            | Third-party skills (find-skills, vercel-\*, etc.) | Managed by `npx skills add`    |
-| `personal/configs/` (this repo)                | Snapshots of tool configs                         | Read-only backup (not SoT)     |
+| `~/workspace/agent-skills/personal/configs/`   | Snapshots of tool configs                         | Read-only backup               |
 
 ## Symlink Map
 
 ```mermaid
 graph TB
-    subgraph sources["Sources of Truth"]
-        skills["~/workspace/agent-skills/skills/*"]
-        instructions["~/workspace/configs/agents/"]
+    subgraph sources["Source of Truth"]
+        repo["~/workspace/agent-skills/<br/>·  skills/*  ·  agents/*  ·  AGENTS.md  ·"]
         thirdparty["~/.agents/skills/*"]
     end
 
     subgraph claude["~/.claude/"]
-        claude_skills["skills/cmd-foo, session-commit, ..."]
+        direction LR
+        claude_skills["skills/*"]
         claude_md["CLAUDE.md"]
-        claude_3p["skills/find-skills, vercel-*, ..."]
     end
 
     subgraph gemini["~/.gemini/"]
-        gemini_skills["antigravity/skills/cmd-foo, ..."]
+        direction LR
+        gemini_skills["antigravity/skills/*"]
         gemini_md["GEMINI.md"]
     end
 
     subgraph codex["~/.codex/"]
-        codex_skills["skills/cmd-foo, ..."]
+        direction LR
+        codex_skills["skills/*"]
         codex_md["AGENTS.md"]
     end
 
-    subgraph backup["personal/configs/ (this repo)"]
-        snap["claude/ gemini/ codex/ snapshots"]
-    end
+    backup["~/workspace/configs/<br/>(read-only backup)"]
 
-    skills -->|symlink| claude_skills
-    skills -->|symlink| gemini_skills
-    skills -->|symlink| codex_skills
+    repo -->|"symlink"| claude_skills
+    repo -->|"symlink"| gemini_skills
+    repo -->|"symlink"| codex_skills
+    repo -->|"AGENTS.md"| claude_md
+    repo -->|"MEMORIES.md"| gemini_md
+    repo -->|"AGENTS.md"| codex_md
 
-    instructions -->|"AGENTS.md symlink"| claude_md
-    instructions -->|"MEMORIES.md symlink"| gemini_md
-    instructions -->|"AGENTS.md symlink"| codex_md
+    thirdparty -->|"symlink"| claude_skills
+    thirdparty -->|"symlink"| gemini_skills
+    thirdparty -->|"symlink"| codex_skills
 
-    thirdparty -->|symlink| claude_3p
-
-    claude -->|"make sync (copy)"| snap
-    gemini -->|"make sync (copy)"| snap
-    codex -->|"make sync (copy)"| snap
+    claude -.->|"make sync"| backup
+    gemini -.->|"make sync"| backup
+    codex -.->|"make sync"| backup
 ```
 
 ## Makefile Workflows
 
 ```mermaid
 graph LR
-    repo["agent-skills/skills/*"]
+    skills["agent-skills/skills/*"]
+    agents["agent-skills/agents/"]
 
     subgraph outbound["Symlink OUT"]
         link["make link-skills"]
@@ -78,12 +78,13 @@ graph LR
         sync["make sync"]
     end
 
-    claude_dir["~/.claude/skills/"]
-    gemini_dir["~/.gemini/antigravity/skills/"]
-    codex_dir["~/.codex/skills/"]
-    snapshots["personal/configs/"]
+    claude_dir["~/.claude/"]
+    gemini_dir["~/.gemini/"]
+    codex_dir["~/.codex/"]
+    snapshots["~/workspace/configs/"]
 
-    repo -->|"symlink"| link
+    skills -->|"skills symlink"| link
+    agents -->|"instructions symlink"| link
     link --> claude_dir
     link --> gemini_dir
     link --> codex_dir
@@ -93,8 +94,8 @@ graph LR
     codex_dir -->|"file copy"| sync
 ```
 
-- **`make link-skills`** creates symlinks FROM this repo INTO all tool dirs (Claude, Gemini, Codex)
-- **`make sync`** copies FROM tool dirs INTO `personal/configs/` (one-way backup for git history)
+- **`make link-skills`** symlinks skills and agent instructions FROM this repo INTO all tool dirs (Claude, Gemini, Codex)
+- **`make sync`** copies FROM tool dirs INTO `~/workspace/configs/` (one-way backup for git history)
 
 ## npx Install & Coexistence
 

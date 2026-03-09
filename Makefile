@@ -7,6 +7,7 @@ CYAN := \033[36m
 RESET := \033[0m
 
 REPO_SKILLS := $(CURDIR)/skills
+REPO_AGENTS := $(CURDIR)/agents
 SHARE_TARGETS := $(HOME)/.gemini/antigravity/skills $(HOME)/.codex/skills
 
 .PHONY: help
@@ -20,6 +21,9 @@ help: ## Prints all the targets in the Makefile
 	@echo ""
 	@echo "$(BOLD)=== Backup ===$(RESET)"
 	@grep -h -E '^sync.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(BOLD)=== Testing ===$(RESET)"
+	@grep -h -E '^stress.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
 	@echo ""
 	@echo "$(BOLD)=== Info ===$(RESET)"
 	@grep -h -E '^(help|status|test).*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
@@ -61,6 +65,30 @@ link-skills: ## Symlink repo skills into Claude, Gemini, and Codex
 			[ -e "$$link" ] || { echo "  - $$(basename $$link) (stale)"; rm -f "$$link"; }; \
 		done; \
 	done
+	@echo ""
+	@echo "=== Agent instructions ==="
+	@for pair in "$(HOME)/.claude/CLAUDE.md:$(REPO_AGENTS)/AGENTS.md" \
+	             "$(HOME)/.codex/AGENTS.md:$(REPO_AGENTS)/AGENTS.md" \
+	             "$(HOME)/.gemini/GEMINI.md:$(REPO_AGENTS)/MEMORIES.md"; do \
+		link="$${pair%%:*}"; \
+		target="$${pair##*:}"; \
+		dir=$$(dirname "$$link"); \
+		mkdir -p "$$dir"; \
+		if [ -L "$$link" ]; then \
+			current=$$(readlink "$$link"); \
+			if [ "$$current" != "$$target" ]; then \
+				rm "$$link"; \
+				ln -s "$$target" "$$link"; \
+				echo "  ~ $$(basename $$link) → $$target (repointed)"; \
+			else \
+				echo "  ✓ $$(basename $$link) (ok)"; \
+			fi; \
+		else \
+			[ -f "$$link" ] && rm "$$link"; \
+			ln -s "$$target" "$$link"; \
+			echo "  + $$(basename $$link) → $$target"; \
+		fi; \
+	done
 	@echo "Done"
 
 .PHONY: list-skills
@@ -79,25 +107,27 @@ list-skills: ## List all skills with descriptions
 ### Sync Configs           ###
 #############################
 
+SYNC_DIR := $(HOME)/workspace/configs
+
 .PHONY: sync
-sync: ## Backup tool configs into personal/configs/ (one-way snapshot)
-	@echo "=== ~/.claude → personal/configs/claude/ ==="
-	@mkdir -p personal/configs/claude
-	@if [ -d ~/.claude/agents ]; then rsync -a --delete --exclude '.git' ~/.claude/agents personal/configs/claude/; else rm -rf personal/configs/claude/agents; fi
-	@[ -f ~/.claude/CLAUDE.md ] && cp ~/.claude/CLAUDE.md personal/configs/claude/ || true
-	@[ -f ~/.claude/Makefile ] && cp ~/.claude/Makefile personal/configs/claude/ || true
-	@[ -f ~/.claude/ideas.md ] && cp ~/.claude/ideas.md personal/configs/claude/ || true
-	@[ -f ~/.claude/.markdownlint.json ] && cp ~/.claude/.markdownlint.json personal/configs/claude/ || true
-	@echo "=== ~/.gemini → personal/configs/gemini/ ==="
-	@mkdir -p personal/configs/gemini
-	@if [ -d ~/.gemini/commands ]; then rsync -a --delete --exclude '.git' ~/.gemini/commands personal/configs/gemini/; else rm -rf personal/configs/gemini/commands; fi
-	@[ -f ~/.gemini/GEMINI.md ] && cp ~/.gemini/GEMINI.md personal/configs/gemini/ || true
-	@[ -f ~/.gemini/settings.json ] && cp ~/.gemini/settings.json personal/configs/gemini/ || true
-	@echo "=== ~/.codex → personal/configs/codex/ ==="
-	@mkdir -p personal/configs/codex
-	@if [ -d ~/.codex/prompts ]; then rsync -a --delete --exclude '.git' ~/.codex/prompts personal/configs/codex/; else rm -rf personal/configs/codex/prompts; fi
-	@if [ -d ~/.codex/rules ]; then rsync -a --delete --exclude '.git' ~/.codex/rules personal/configs/codex/; else rm -rf personal/configs/codex/rules; fi
-	@[ -f ~/.codex/config.toml ] && cp ~/.codex/config.toml personal/configs/codex/ || true
+sync: ## Backup tool configs into ~/workspace/configs/ (one-way snapshot)
+	@echo "=== ~/.claude → $(SYNC_DIR)/claude/ ==="
+	@mkdir -p $(SYNC_DIR)/claude
+	@if [ -d ~/.claude/agents ]; then rsync -a --delete --exclude '.git' ~/.claude/agents $(SYNC_DIR)/claude/; else rm -rf $(SYNC_DIR)/claude/agents; fi
+	@[ -f ~/.claude/CLAUDE.md ] && cp ~/.claude/CLAUDE.md $(SYNC_DIR)/claude/ || true
+	@[ -f ~/.claude/Makefile ] && cp ~/.claude/Makefile $(SYNC_DIR)/claude/ || true
+	@[ -f ~/.claude/ideas.md ] && cp ~/.claude/ideas.md $(SYNC_DIR)/claude/ || true
+	@[ -f ~/.claude/.markdownlint.json ] && cp ~/.claude/.markdownlint.json $(SYNC_DIR)/claude/ || true
+	@echo "=== ~/.gemini → $(SYNC_DIR)/gemini/ ==="
+	@mkdir -p $(SYNC_DIR)/gemini
+	@if [ -d ~/.gemini/commands ]; then rsync -a --delete --exclude '.git' ~/.gemini/commands $(SYNC_DIR)/gemini/; else rm -rf $(SYNC_DIR)/gemini/commands; fi
+	@[ -f ~/.gemini/GEMINI.md ] && cp ~/.gemini/GEMINI.md $(SYNC_DIR)/gemini/ || true
+	@[ -f ~/.gemini/settings.json ] && cp ~/.gemini/settings.json $(SYNC_DIR)/gemini/ || true
+	@echo "=== ~/.codex → $(SYNC_DIR)/codex/ ==="
+	@mkdir -p $(SYNC_DIR)/codex
+	@if [ -d ~/.codex/prompts ]; then rsync -a --delete --exclude '.git' ~/.codex/prompts $(SYNC_DIR)/codex/; else rm -rf $(SYNC_DIR)/codex/prompts; fi
+	@if [ -d ~/.codex/rules ]; then rsync -a --delete --exclude '.git' ~/.codex/rules $(SYNC_DIR)/codex/; else rm -rf $(SYNC_DIR)/codex/rules; fi
+	@[ -f ~/.codex/config.toml ] && cp ~/.codex/config.toml $(SYNC_DIR)/codex/ || true
 	@echo "Done"
 
 .PHONY: publish
@@ -107,6 +137,25 @@ publish: ## Install all skills globally via npx (for skills.sh telemetry), then 
 	@echo ""
 	@echo "Restoring local symlinks..."
 	@$(MAKE) link-skills
+
+########################
+### Testing          ###
+########################
+
+STRESS_SKILL ?= cmd-pr-conflict-resolver
+STRESS_COUNT ?= 50
+
+.PHONY: stress-install
+stress-install: ## Reinstall a single skill N times (testing only)
+	@echo "Stress-testing: installing '$(STRESS_SKILL)' $(STRESS_COUNT) times..."
+	@for i in $$(seq 1 $(STRESS_COUNT)); do \
+		echo "=== Run $$i/$(STRESS_COUNT) ==="; \
+		cd ~ && npx skills add olshansk/agent-skills --skill $(STRESS_SKILL) -g -a '*' -y; \
+	done
+	@echo ""
+	@echo "Restoring local symlinks..."
+	@$(MAKE) link-skills
+	@echo "Done — $(STRESS_COUNT) installs completed"
 
 ########################
 ### Info             ###

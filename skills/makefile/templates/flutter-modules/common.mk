@@ -5,8 +5,11 @@
 # Strict shell + sane make defaults
 SHELL := /bin/bash
 .SHELLFLAGS := -eu -o pipefail -c
-MAKEFLAGS += --warn-undefined-variables
 MAKEFLAGS += --no-builtin-rules
+
+# Suppress false-positive warnings from define macros that use $(1)
+# (--warn-undefined-variables treats macro positional args as undefined)
+1 ?=
 
 # VERBOSE=1 to show commands
 ifdef VERBOSE
