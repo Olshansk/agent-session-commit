@@ -60,6 +60,7 @@ Skills I use daily but might rename or delete in the future. I prefix them with 
 | [`cmd-chain-halt-code-reviewer`](skills/cmd-chain-halt-code-reviewer/SKILL.md) | Review protocol code for chain halt risks, non-determinism, and onchain behavior bugs |
 | [`cmd-clean-code`](skills/cmd-clean-code/SKILL.md) | Improve code readability without altering functionality using idiomatic best practices |
 | [`cmd-code-cleanup`](skills/cmd-code-cleanup/SKILL.md) | Remove dead code and duplication with a 5-phase systematic approach |
+| [`cmd-gh-comments`](skills/cmd-gh-comments/SKILL.md) | Triage and resolve GitHub PR review comments with categorized action plans |
 | [`cmd-gh-issue`](skills/cmd-gh-issue/SKILL.md) | Create structured GitHub issues from conversation context using `gh` CLI |
 | [`cmd-idiot-proof-docs`](skills/cmd-idiot-proof-docs/SKILL.md) | Simplify documentation for clarity and scannability with approval-gated edits |
 | [`cmd-pr-build-context`](skills/cmd-pr-build-context/SKILL.md) | Build high-signal PR context with diff analysis, risk assessment, and discussion questions |

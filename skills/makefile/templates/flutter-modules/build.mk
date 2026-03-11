@@ -80,11 +80,11 @@ flutter-build-ipa: _check-flutter _check-export-options _check-asc-app ## Build 
 	case "$$CHOICE" in \
 		1) \
 			NEW_APP=$$(echo $$APP_VERSION | awk -F. -v OFS=. '{$$NF=$$NF+1; print}'); \
-			NEW_VERSION="$$NEW_APP+$$NEW_BUILD"; \
+			NEW_VERSION="$$NEW_APP+1"; \
 			;; \
 		2) \
 			NEW_APP=$$(echo $$APP_VERSION | awk -F. -v OFS=. '{$$(NF-1)=$$(NF-1)+1; $$NF=0; print}'); \
-			NEW_VERSION="$$NEW_APP+$$NEW_BUILD"; \
+			NEW_VERSION="$$NEW_APP+1"; \
 			;; \
 		3) \
 			NEW_APP="$$APP_VERSION"; \
@@ -95,8 +95,9 @@ flutter-build-ipa: _check-flutter _check-export-options _check-asc-app ## Build 
 			exit 1; \
 			;; \
 	esac; \
+	FINAL_BUILD=$$(echo "$$NEW_VERSION" | cut -d'+' -f2); \
 	sed -i '' "s/^version: .*/version: $$NEW_VERSION/" $(FLUTTER_DIR)/pubspec.yaml; \
-	printf "  $(GREEN)Updated:$(RESET) $$APP_VERSION $(DIM)(build $$BUILD_NUM)$(RESET) $(ARROW) $(BOLD)$$NEW_APP$(RESET) $(DIM)(build $$NEW_BUILD)$(RESET)\n"; \
+	printf "  $(GREEN)Updated:$(RESET) $$APP_VERSION $(DIM)(build $$BUILD_NUM)$(RESET) $(ARROW) $(BOLD)$$NEW_APP$(RESET) $(DIM)(build $$FINAL_BUILD)$(RESET)\n"; \
 	printf "\n"
 	@# Clean stale IPAs to avoid false positives
 	@rm -rf $(FLUTTER_DIR)/build/ios/ipa
@@ -123,6 +124,8 @@ flutter-build-ipa: _check-flutter _check-export-options _check-asc-app ## Build 
 		printf "\n"; \
 		rm -f "$$BUILD_LOG"; \
 	elif grep -q "Error Downloading App Information" "$$BUILD_LOG" 2>/dev/null; then \
+		BUNDLE_ID=$$(defaults read "$(FLUTTER_DIR)/build/ios/archive/Runner.xcarchive/Info.plist" ApplicationProperties 2>/dev/null | grep CFBundleIdentifier | sed 's/.*= "\(.*\)";/\1/'); \
+		APP_NAME=$$(defaults read "$(FLUTTER_DIR)/build/ios/archive/Runner.xcarchive/Info.plist" ApplicationProperties 2>/dev/null | grep CFBundleShortVersionString | sed 's/.*= "\(.*\)";/\1/' || echo "unknown"); \
 		printf "\n"; \
 		printf "$(RED)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(RESET)\n"; \
 		printf "$(RED)$(BOLD)  App Not Registered in App Store Connect$(RESET)\n"; \
@@ -131,10 +134,14 @@ flutter-build-ipa: _check-flutter _check-export-options _check-asc-app ## Build 
 		printf "  $(YELLOW)The archive built successfully, but IPA export failed because$(RESET)\n"; \
 		printf "  $(YELLOW)the app is not registered in App Store Connect.$(RESET)\n"; \
 		printf "\n"; \
+		printf "  $(BOLD)Required App Store Connect settings:$(RESET)\n"; \
+		printf "  $(DIM)Bundle ID:$(RESET)  $(CYAN)$$BUNDLE_ID$(RESET)\n"; \
+		printf "  $(DIM)SKU:$(RESET)        $(CYAN)$$BUNDLE_ID$(RESET) $(DIM)(or any unique string)$(RESET)\n"; \
+		printf "\n"; \
 		printf "  $(BOLD)To fix:$(RESET)\n"; \
 		printf "  $(DIM)1.$(RESET) Go to $(CYAN)https://appstoreconnect.apple.com/apps$(RESET)\n"; \
 		printf "  $(DIM)2.$(RESET) Click $(BOLD)+$(RESET) $(ARROW) $(BOLD)New App$(RESET)\n"; \
-		printf "  $(DIM)3.$(RESET) Fill in app name, bundle ID, and SKU\n"; \
+		printf "  $(DIM)3.$(RESET) Select bundle ID $(CYAN)$$BUNDLE_ID$(RESET)\n"; \
 		printf "  $(DIM)4.$(RESET) Re-export without rebuilding:\n"; \
 		printf "\n"; \
 		printf "     $(CYAN)make flutter-export-ipa$(RESET)\n"; \
@@ -252,15 +259,20 @@ flutter-export-ipa: _check-export-options ## Re-export IPA from existing archive
 		printf "\n"; \
 		rm -f "$$BUILD_LOG"; \
 	elif grep -q "Error Downloading App Information" "$$BUILD_LOG" 2>/dev/null; then \
+		BUNDLE_ID=$$(defaults read "$(FLUTTER_DIR)/build/ios/archive/Runner.xcarchive/Info.plist" ApplicationProperties 2>/dev/null | grep CFBundleIdentifier | sed 's/.*= "\(.*\)";/\1/'); \
 		printf "\n"; \
 		printf "$(RED)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(RESET)\n"; \
 		printf "$(RED)$(BOLD)  App Not Registered in App Store Connect$(RESET)\n"; \
 		printf "$(RED)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(RESET)\n"; \
 		printf "\n"; \
+		printf "  $(BOLD)Required App Store Connect settings:$(RESET)\n"; \
+		printf "  $(DIM)Bundle ID:$(RESET)  $(CYAN)$$BUNDLE_ID$(RESET)\n"; \
+		printf "  $(DIM)SKU:$(RESET)        $(CYAN)$$BUNDLE_ID$(RESET) $(DIM)(or any unique string)$(RESET)\n"; \
+		printf "\n"; \
 		printf "  $(BOLD)To fix:$(RESET)\n"; \
 		printf "  $(DIM)1.$(RESET) Go to $(CYAN)https://appstoreconnect.apple.com/apps$(RESET)\n"; \
 		printf "  $(DIM)2.$(RESET) Click $(BOLD)+$(RESET) $(ARROW) $(BOLD)New App$(RESET)\n"; \
-		printf "  $(DIM)3.$(RESET) Fill in app name, bundle ID, and SKU\n"; \
+		printf "  $(DIM)3.$(RESET) Select bundle ID $(CYAN)$$BUNDLE_ID$(RESET)\n"; \
 		printf "  $(DIM)4.$(RESET) Re-run: $(CYAN)make flutter-export-ipa$(RESET)\n"; \
 		printf "\n"; \
 		printf "$(RED)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(RESET)\n"; \
@@ -339,5 +351,5 @@ flutter-build-aab: _check-flutter ## Build AAB for Google Play Store
 	if [ -f "$$AAB_FILE" ]; then \
 		AAB_SIZE=$$(du -h "$$AAB_FILE" | cut -f1); \
 		printf "  $(DIM)File:$(RESET) $$AAB_FILE\n"; \
-		printf "  $(DIM)Size:$(RESET) $$ABB_SIZE\n\n"; \
+		printf "  $(DIM)Size:$(RESET) $$AAB_SIZE\n\n"; \
 	fi
