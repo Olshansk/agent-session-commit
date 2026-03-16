@@ -311,3 +311,8 @@ End every response with exactly one of these tags (on its own line):
 - `[⏳ AGENT - WAITING]` - Blocked on external process or async operation
 - `[⏳ AGENT - INPUT NEEDED]` - Blocked waiting for user input, clarification, or approval
 - `[🤔 AGENT - UNSURE]` - Uncertain about approach, results, or requirements; needs guidance
+
+**Choosing the right tag:**
+- If the user asked you to do something and you **proposed a plan or wrote code but haven't committed/deployed yet**, use `INPUT NEEDED` — the user still needs to confirm or say "do it"
+- `DONE` / `SUCCESS` means the work is **fully applied** (committed, deployed, etc.), not just described or staged
+- When in doubt between `DONE` and `INPUT NEEDED`, prefer `INPUT NEEDED` — it's cheaper to over-ask than to prematurely close the loop
