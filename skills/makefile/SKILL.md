@@ -392,8 +392,20 @@ help-unclassified: ## Show targets not in categorized help
 **Help description rules:**
 - **One line max** - Description must fit on single line unless user explicitly asks for more
 - **Include what it affects** - e.g., "creates .venv", "exports to CSV", "deletes database"
+- **Color inline paths/commands** - Use `$(GREEN)` for paths and commands within descriptions. Put color codes in the format string, not inside `%s` (printf `%s` treats ANSI as literals)
 - **Example on next line** - Show realistic usage with parameters in `$(GREEN)`
 - **Skip examples for simple targets** - If no parameters, no example needed
+
+**Coloring inline values in descriptions:**
+
+```makefile
+# Good - color codes in format string, paths/commands highlighted
+@printf "$(CYAN)%-25s$(RESET) Clean + build, install to $(GREEN)~/.grove$(RESET)\n" "install-prod"
+@printf "$(CYAN)%-25s$(RESET) Build binary to $(GREEN)dist/$(RESET)\n" "dev-build"
+
+# Bad - color codes inside %s are printed as literals
+@printf "$(CYAN)%-25s$(RESET) %s\n" "install-prod" "Install to $(GREEN)~/.grove$(RESET)"
+```
 
 **Catch-all redirects to help:**
 ```makefile
@@ -415,6 +427,7 @@ help-unclassified: ## Show targets not in categorized help
 | `.PHONY` on file targets | Only use `.PHONY` for non-file targets |
 | Too many public targets | Don't expose `install-X` or `check-X` - use internal `_check-X` dependencies |
 | `$(DIM)` for usage text | Appears grey/unreadable - use `$(GREEN)` instead |
+| Color codes inside `%s` | ANSI codes in `%s` args print as literals - put colors in format string |
 | Target named after tool | Name after the action: `remove-bg` not `rembg` |
 | `help-unclassified` shows filename | Use `sed 's/^[^:]*://'` to strip `Makefile:` prefix |
 | No `.env` export | Add `-include .env` and `.EXPORT_ALL_VARIABLES:` at top |
