@@ -60,12 +60,12 @@ Skills I use daily but might rename or delete in the future. I prefix them with 
 | [`cmd-chain-halt-code-reviewer`](skills/cmd-chain-halt-code-reviewer/SKILL.md) | Review protocol code for chain halt risks, non-determinism, and onchain behavior bugs |
 | [`cmd-clean-code`](skills/cmd-clean-code/SKILL.md) | Improve code readability without altering functionality using idiomatic best practices |
 | [`cmd-code-cleanup`](skills/cmd-code-cleanup/SKILL.md) | Remove dead code and duplication with a 5-phase systematic approach |
-| [`cmd-gh-comments`](skills/cmd-gh-comments/SKILL.md) | Triage and resolve GitHub PR review comments with categorized action plans |
 | [`cmd-gh-issue`](skills/cmd-gh-issue/SKILL.md) | Create structured GitHub issues from conversation context using `gh` CLI |
 | [`cmd-idiot-proof-docs`](skills/cmd-idiot-proof-docs/SKILL.md) | Simplify documentation for clarity and scannability with approval-gated edits |
 | [`cmd-pr-build-context`](skills/cmd-pr-build-context/SKILL.md) | Build high-signal PR context with diff analysis, risk assessment, and discussion questions |
 | [`cmd-pr-conflict-resolver`](skills/cmd-pr-conflict-resolver/SKILL.md) | Resolve merge conflicts with context-aware 3-tier classification and escalation |
 | [`cmd-pr-description`](skills/cmd-pr-description/SKILL.md) | Generate concise PR descriptions by analyzing the diff against a base branch |
+| [`cmd-pr-gh-comments`](skills/cmd-pr-gh-comments/SKILL.md) | Triage and resolve GitHub PR review comments with categorized action plans |
 | [`cmd-pr-review-prepare`](skills/cmd-pr-review-prepare/SKILL.md) | Prepare branch for code review by building context and identifying issues |
 | [`cmd-pr-sweep`](skills/cmd-pr-sweep/SKILL.md) | Review changes for test gaps, simplification, naming consistency, reuse, and TODO quality |
 | [`cmd-pr-test-plan`](skills/cmd-pr-test-plan/SKILL.md) | Generate manual test plans with verified commands and pass/fail criteria |

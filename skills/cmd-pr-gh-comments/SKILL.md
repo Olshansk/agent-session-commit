@@ -1,5 +1,5 @@
 ---
-name: cmd-gh-comments
+name: cmd-pr-gh-comments
 description: Triage and resolve GitHub PR review comments with categorized action plans and approval-gated execution
 disable-model-invocation: true
 ---
