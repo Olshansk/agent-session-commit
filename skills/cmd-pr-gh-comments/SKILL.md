@@ -14,7 +14,8 @@ Pull all review comments from the current branch's PR, build a plan to address e
 - [4. Assess and Categorize](#4-assess-and-categorize)
 - [5. Present the Plan](#5-present-the-plan)
 - [6. Execute the Plan](#6-execute-the-plan)
-- [7. Wrap Up](#7-wrap-up)
+- [7. Resolve Comment Threads](#7-resolve-comment-threads)
+- [8. Wrap Up](#8-wrap-up)
 
 ## 1. Prerequisites
 
@@ -86,11 +87,12 @@ For each comment, extract: `id`, `node_id`, `user.login`, `body`, `path`, `line`
 
 **Filter out:**
 
-- Comments authored by the current user
 - Bot comments (`user.type == "Bot"`)
 - Already-resolved threads
 
-**Group** inline review comments into threads by `in_reply_to_id`. The latest non-author comment in a thread determines the thread's status.
+**Note:** Do NOT filter out comments authored by the current user. Users often leave self-review comments on their own PRs as reminders or action items to address.
+
+**Group** inline review comments into threads by `in_reply_to_id`. The latest comment in a thread determines the thread's status.
 
 If zero comments remain after filtering, report "No open PR comments to address" and stop.
 
@@ -172,34 +174,13 @@ After all items are addressed, show a summary:
 | ... | ... | Discuss | User decided to defer |
 ```
 
-## 7. Wrap Up
+## 7. Resolve Comment Threads
 
-Ask the user:
+**Immediately after execution completes**, resolve all addressed comment threads on GitHub. Do NOT wait for user confirmation — this happens automatically for all Fix, Investigate (that were resolved), Acknowledge, and Outdated items.
 
-> All comments have been addressed. Ready to:
-> 1. Commit with message "Tended to github comments"
-> 2. Push to remote
-> 3. Resolve the addressed comment threads on GitHub
->
-> Proceed with all three? Or would you like to review the changes first?
+Skip resolution only for **Discuss** items the user explicitly deferred.
 
-**Do not proceed until the user confirms.**
-
-**Commit and push:**
-
-```bash
-git add <specific changed files>
-```
-
-```bash
-git commit -m "Tended to github comments"
-```
-
-```bash
-git push
-```
-
-**Resolve comment threads** using the GraphQL API. For each addressed thread (Fix, Acknowledge, Outdated categories), get the thread ID from the comment's `node_id`:
+For each addressed thread, get the thread ID from the comment's `node_id`:
 
 ```bash
 gh api graphql -f query='
@@ -228,7 +209,31 @@ mutation($threadId: ID!) {
 }' -f threadId="{thread_id}"
 ```
 
-Skip resolution for **Discuss** items the user deferred.
+## 8. Wrap Up
+
+Ask the user:
+
+> All comments have been addressed and {M} threads resolved on GitHub. Ready to:
+> 1. Commit with message "Tended to github comments"
+> 2. Push to remote
+>
+> Proceed? Or would you like to review the changes first?
+
+**Do not proceed until the user confirms.**
+
+**Commit and push:**
+
+```bash
+git add <specific changed files>
+```
+
+```bash
+git commit -m "Tended to github comments"
+```
+
+```bash
+git push
+```
 
 **Report final status:**
 
