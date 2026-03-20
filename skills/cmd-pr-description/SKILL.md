@@ -1,6 +1,6 @@
 ---
 name: cmd-pr-description
-description: Generate concise PR descriptions by analyzing the diff against a base branch
+description: Generate a PR title and description, then commit, create/update the PR on approval
 disable-model-invocation: true
 ---
 
@@ -15,8 +15,10 @@ Copy to clipboard: `cat PR_DESCRIPTION.md | pbcopy`
 - [Instructions](#instructions)
   - [1. Determine the base branch](#1-determine-the-base-branch)
   - [2. Analyze the changes against the default branch](#2-analyze-the-changes-against-the-default-branch)
-  - [3. Generate the description using the format below](#3-generate-the-description-using-the-format-below)
-  - [4. Offer to update the GitHub PR](#4-offer-to-update-the-github-pr)
+  - [3. Generate the title and description using the format below](#3-generate-the-title-and-description-using-the-format-below)
+  - [4. Ask user to approve, edit, or reject](#4-ask-user-to-approve-edit-or-reject)
+  - [5. On approval: commit, create/update PR](#5-on-approval-commit-createupdate-pr)
+- [Title Format](#title-format)
 - [Output Format](#output-format)
 - [Section Rules](#section-rules)
   - [tl;dr](#tldr)
@@ -61,17 +63,82 @@ git diff $BASE_BRANCH --stat -- ":(exclude)*.lock" ":(exclude)package-lock.json"
 git log $BASE_BRANCH..HEAD --oneline
 ```
 
-### 3. Generate the description using the format below
+### 3. Generate the title and description using the format below
 
-### 4. Offer to update the GitHub PR
+Generate both a **PR title** (see [Title Format](#title-format)) and the full description body (see [Output Format](#output-format)).
 
-After writing `PR_DESCRIPTION.md`, use `AskUserQuestion` to ask the user if they want to update the GitHub PR description automatically.
+Write the description to `PR_DESCRIPTION.md` and display both the title and description to the user.
 
-If yes, run:
+### 4. Ask user to approve, edit, or reject
+
+Use `AskUserQuestion` to present the generated title and description and ask the user to:
+
+1. **Approve** as-is
+2. **Request changes** (provide feedback, re-generate)
+3. **Reject** (stop here)
+
+Do NOT proceed to step 5 until the user explicitly approves.
+
+### 5. On approval: commit, create/update PR
+
+Once the user approves, execute the following steps in order:
+
+**Step 5a — Commit unstaged changes (if any):**
 
 ```bash
-gh pr edit --body "$(cat PR_DESCRIPTION.md)"
+git add -A && git commit -m "<generated title>"
 ```
+
+If there are no unstaged/staged changes, skip this step.
+
+**Step 5b — Push the branch:**
+
+```bash
+git push -u origin HEAD
+```
+
+**Step 5c — Create or update the PR:**
+
+Check if a PR already exists for the current branch:
+
+```bash
+gh pr view --json number 2>/dev/null
+```
+
+If a PR exists, update it:
+
+```bash
+gh pr edit --title "<generated title>" --body "$(cat PR_DESCRIPTION.md)"
+```
+
+If no PR exists, create one:
+
+```bash
+gh pr create --title "<generated title>" --body "$(cat PR_DESCRIPTION.md)"
+```
+
+## Title Format
+
+PR titles must follow this format:
+
+```
+[KEYWORD] Summary
+```
+
+**Rules:**
+
+- `KEYWORD` is an uppercase word that best categorizes the PR — not a fixed list. Common examples: `FEAT`, `FEATURE`, `FIX`, `BUG`, `REFACTOR`, `TECHDEBT`, `DOCS`, `TEST`, `CHORE`, `PERF`, `PERFORMANCE`, `CI`, `BUILD`, `STYLE`, `CLI`, `CONFIG`, `MIGRATION`, `SECURITY`, `API`, `UI`, `INFRA`
+- Pick whichever keyword most accurately describes the PR — invent a new one if none of the above fit
+- `Summary` is a concise imperative phrase (e.g., "Add session-based auth", "Fix null pointer in user lookup")
+- Max 70 characters total
+- No period at the end
+
+**Examples:**
+
+- `[FEAT] Add session-based authentication`
+- `[FIX] Resolve race condition in queue worker`
+- `[REFACTOR] Simplify middleware chain`
+- `[DOCS] Update API reference for v2 endpoints`
 
 ## Output Format
 
