@@ -190,17 +190,36 @@ Confirm zero remaining conflict markers.
 
 ## 7. Reflection and Handoff
 
-Provide a summary table:
+Provide a summary table with a **Status** emoji column so risky items are impossible to overlook:
 
-| File | Line(s) | Tier  | Resolution        |
-| ---- | ------- | ----- | ----------------- |
-| ...  | ...     | 1/2/3 | Brief description |
+| Status | File | Line(s) | Tier | Resolution |
+| ------ | ---- | ------- | ---- | ---------- |
+| ...    | ...  | ...     | 1/2/3 | Brief description |
 
-Flag any of the following:
+**Status emoji meanings** (use exactly these):
 
-- Tier 2 resolutions where your confidence was lower than usual
-- Cascading implications found during step 3d
-- Architectural divergence detected between the two sides
-- Files that weren't in the conflict set but may be affected by the merge
+| Emoji | Meaning | When to use |
+| ----- | ------- | ----------- |
+| `✅` | Safe / auto-resolved | Tier 1 resolutions, trivial merges, no risk |
+| `🟢` | Resolved with high confidence | Tier 2 where intent was clear from context |
+| `🟡` | Resolved but needs your eyes | Tier 2 with lower confidence, subtle behavior changes, or dropped code |
+| `🔴` | Escalated / blocked | Tier 3, waiting for your direction |
+| `⚠️` | Cascading risk | Auto-merged files or downstream code that may be affected but wasn't in conflict set |
+
+**Rules:**
+- Every row MUST have a status emoji -- no blank status cells
+- Any resolution that **drops code** (even dead code) must be `🟡` or higher
+- Any Tier 2 resolution where your confidence is below ~80% must be `🟡`
+- Tier 3 is always `🔴`
+
+### Flags section
+
+After the table, list flags grouped by severity. Each flag MUST start with its emoji:
+
+- `🔴` Tier 3 escalations (blocking -- need direction before proceeding)
+- `🟡` Tier 2 lower-confidence resolutions (non-blocking but review recommended)
+- `⚠️` Cascading implications found during step 3d
+- `⚠️` Architectural divergence detected between the two sides
+- `⚠️` Files that weren't in the conflict set but may be affected by the merge
 
 Closing question: **Are there areas of the codebase this merge could affect that aren't in the conflict markers?**

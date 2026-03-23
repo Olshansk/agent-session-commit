@@ -18,3 +18,5 @@
 - Encountered DNS resolution error for 'substack.com' in user's environment, preventing E2E confirmation of Substack tipping. Code logic and unit tests are verified correct.
 - Updated ResNet training pipeline: froze backbone, increased resolution to 512x512, added RandomVerticalFlip, renamed 'grain' to 'gradation' in code, and implemented K-Fold Cross Validation. Added loss weighting (10.0 for gradation, 1.0 for Atterberg).
 - Unfroze ResNet backbone (FREEZE_BACKBONE=False) and switched to console.print for epoch logging to fix missing logs issue. Kept 512x512 resolution and loss weighting.
+- The "Unit Detection Summary" in the Units tab was refactored to remove the outer section wrapper and simplify nested evidence statistics boxes, matching the flatter style of the Mapping Workbench.
+- The "Prepare preview" (loadInlineDataPreview) returns empty results if the BoreDM target table (e.g., 'log', 'lithology') lacks a 'PointID' field after mapping, as 'join_comapped_rows' in 'server/core/normalization.py' depends on it to merge co-mapped tables. If 'PointID' is unmapped or missing, rows are skipped during normalization.
