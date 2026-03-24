@@ -1,6 +1,6 @@
 ---
 name: makefile
-description: "Create or improve Makefiles with minimal complexity. Templates available: base, python-uv, python-fastapi, nodejs, go, chrome-extension, flutter."
+description: "Create or improve Makefiles with minimal complexity. Templates available: base, python-uv, python-fastapi, nodejs, go, chrome-extension, flutter, electron."
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 ---
 
@@ -38,6 +38,7 @@ For new projects, use the appropriate template:
 | Go | `templates/go.mk` | Standard |
 | Chrome Extension | `templates/chrome-extension.mk` | Modular |
 | Flutter App | `templates/flutter.mk` | Modular |
+| Electron App | `templates/electron.mk` | Modular |
 
 ### Chrome Extension Structure
 
@@ -83,6 +84,32 @@ Copy from `templates/flutter-modules/` to your project's `makefiles/` directory.
 - `flutter-export-ipa` re-exports IPA from existing archive without rebuilding
 - `_check-asc-app` pre-flight App Store Connect validation (with ASC_API_KEY/ASC_API_ISSUER)
 - `flutter-lint FIX=true` Dart formatting with FIX pattern
+- `VERBOSE=1 make <target>` show commands for debugging
+
+### Electron App Structure
+
+```
+Makefile                    # Main file with help + includes
+makefiles/
+  colors.mk                # ANSI colors & print helpers
+  common.mk                # Shell flags, VERBOSE mode, guards
+  dev.mk                   # Setup, dev server, debug, clean
+  build.mk                 # Pack-check, dist (mac/win/linux), publish
+  lint.mk                  # ESLint, Prettier, TypeScript, tests
+```
+
+Copy from `templates/electron-modules/` to your project's `makefiles/` directory.
+
+**Key features:**
+- `electron-dev` starts dev mode with hot-reload
+- `electron-debug` launches with DevTools open
+- `electron-clean` single target that removes artifacts, node_modules, and lock file
+- `electron-pack-check` smoke-tests that the app loads without errors
+- `electron-dist-mac` / `electron-dist-win` / `electron-dist-linux` cross-platform builds
+- `electron-dist-all` builds for all platforms in one shot
+- `electron-publish` publishes to GitHub Releases (requires `GH_TOKEN`)
+- `electron-lint FIX=true` ESLint + Prettier with auto-fix pattern
+- `electron-typecheck` TypeScript type checking
 - `VERBOSE=1 make <target>` show commands for debugging
 
 ## Interaction Pattern
