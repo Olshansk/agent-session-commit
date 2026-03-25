@@ -24,9 +24,24 @@
 | **Agent instructions** | `~/workspace/agent-skills/agents/` (this repo) | `make link-skills` |
 | **Third-party skills** | `~/.agents/skills/` | `npx skills add` |
 
-- **Edit your skills here** → symlinks in `~/.claude/skills/` propagate changes instantly
+### How `make link-skills` works <!-- omit in toc -->
+
+`make link-skills` creates symlinks in each tool's skills directory from **both** sources:
+
+```text
+~/.claude/skills/
+~/.codex/skills/          ← each gets symlinks to both sources
+~/.gemini/antigravity/skills/
+
+Sources (in priority order):
+  1. ~/.agents/skills/<name>/        ← third-party (linked first)
+  2. ~/workspace/agent-skills/skills/<name>/  ← repo (linked second, wins on conflict)
+```
+
+- Repo skills override third-party skills of the same name
+- Third-party-only skills (e.g. `grove`, `gstack`) are visible to all tools
+- **Edit your skills in the repo** → symlinks propagate changes instantly
 - **Never edit** skills directly in `~/.claude/skills/` — those are symlinks
-- `make link-skills` symlinks into `~/.claude/skills/`, `~/.gemini/antigravity/skills/`, and `~/.codex/skills/`
 
 > **After `npx skills add olshansk/agent-skills`:** always run `make link-skills` to restore direct symlinks. npx creates copies that break the live-edit flow. Third-party skills are unaffected.
 

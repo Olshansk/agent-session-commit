@@ -8,6 +8,7 @@ RESET := \033[0m
 
 REPO_SKILLS := $(CURDIR)/skills
 REPO_AGENTS := $(CURDIR)/agents
+THIRDPARTY_SKILLS := $(HOME)/.agents/skills
 SHARE_TARGETS := $(HOME)/.gemini/antigravity/skills $(HOME)/.codex/skills
 
 .PHONY: help
@@ -36,10 +37,31 @@ help: ## Prints all the targets in the Makefile
 ALL_TARGETS := $(HOME)/.claude/skills $(SHARE_TARGETS)
 
 .PHONY: link-skills
-link-skills: ## Symlink repo skills into Claude, Gemini, and Codex
+link-skills: ## Symlink repo + third-party skills into Claude, Gemini, and Codex
 	@for target_dir in $(ALL_TARGETS); do \
 		mkdir -p "$$target_dir"; \
 		echo "=== $$target_dir ==="; \
+		if [ -d "$(THIRDPARTY_SKILLS)" ]; then \
+			for skill in $(THIRDPARTY_SKILLS)/*/; do \
+				name=$$(basename "$$skill"); \
+				link="$$target_dir/$$name"; \
+				if [ -L "$$link" ]; then \
+					current=$$(readlink "$$link"); \
+					if [ "$$current" != "$$skill" ]; then \
+						rm "$$link"; \
+						ln -s "$$skill" "$$link"; \
+						echo "  ~ $$name (3rd-party, repointed)"; \
+					fi; \
+				elif [ -d "$$link" ]; then \
+					rm -rf "$$link"; \
+					ln -s "$$skill" "$$link"; \
+					echo "  ~ $$name (3rd-party, replaced real dir)"; \
+				else \
+					ln -s "$$skill" "$$link"; \
+					echo "  + $$name (3rd-party)"; \
+				fi; \
+			done; \
+		fi; \
 		for skill in $(REPO_SKILLS)/*/; do \
 			name=$$(basename "$$skill"); \
 			link="$$target_dir/$$name"; \
@@ -48,20 +70,20 @@ link-skills: ## Symlink repo skills into Claude, Gemini, and Codex
 				if [ "$$current" != "$$skill" ]; then \
 					rm "$$link"; \
 					ln -s "$$skill" "$$link"; \
-					echo "  ~ $$name (repointed)"; \
+					echo "  ~ $$name (repo, repointed)"; \
 				fi; \
 			elif [ -d "$$link" ]; then \
 				rm -rf "$$link"; \
 				ln -s "$$skill" "$$link"; \
-				echo "  ~ $$name (replaced real dir)"; \
+				echo "  ~ $$name (repo, replaced real dir)"; \
 			else \
 				ln -s "$$skill" "$$link"; \
-				echo "  + $$name"; \
+				echo "  + $$name (repo)"; \
 			fi; \
 		done; \
 		for link in "$$target_dir"/*; do \
 			[ -L "$$link" ] || continue; \
-			readlink "$$link" | grep -q "$(REPO_SKILLS)" || continue; \
+			readlink "$$link" | grep -q -e "$(REPO_SKILLS)" -e "$(THIRDPARTY_SKILLS)" || continue; \
 			[ -e "$$link" ] || { echo "  - $$(basename $$link) (stale)"; rm -f "$$link"; }; \
 		done; \
 	done
