@@ -218,9 +218,8 @@ Each skill directory contains a `SKILL.md` with YAML frontmatter. All `cmd-*` sk
 - `cmd-pr-review-prepare` - Prepare branch for code review
 - `cmd-pr-conflict-resolver` - Resolve merge conflicts with 3-tier classification
 - `cmd-productionize` - Transform apps into production-ready deployments
-- `cmd-code-cleanup` - Dead code and duplication removal (5-phase)
-- `cmd-clean-code` - Improve code readability without altering functionality
-- `cmd-python-stylizer` - Python style and cognitive load improvements
+- `cmd-sculpt-code` - Reshape code quality: naming, structure, TODOs, surface area
+- `cmd-pr-edgecase` - Review PR for test gaps, logic edge cases, failure modes
 - `cmd-scope-sweep` - Final pass to identify missed items and risks
 - `cmd-rfc-review` - Review RFCs using SCQA framework
 - `cmd-chain-halt-code-reviewer` - Review protocol code for chain halt risks

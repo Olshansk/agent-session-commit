@@ -58,8 +58,6 @@ Skills I use daily but might rename or delete in the future. I prefix them with 
 | Skill                          | Description                                                                          |
 | ------------------------------ | ------------------------------------------------------------------------------------ |
 | [`cmd-chain-halt-code-reviewer`](skills/cmd-chain-halt-code-reviewer/SKILL.md) | Review protocol code for chain halt risks, non-determinism, and onchain behavior bugs |
-| [`cmd-clean-code`](skills/cmd-clean-code/SKILL.md) | Improve code readability without altering functionality using idiomatic best practices |
-| [`cmd-code-cleanup`](skills/cmd-code-cleanup/SKILL.md) | Remove dead code and duplication with a 5-phase systematic approach |
 | [`cmd-gh-issue`](skills/cmd-gh-issue/SKILL.md) | Create structured GitHub issues from conversation context using `gh` CLI |
 | [`cmd-idiot-proof-docs`](skills/cmd-idiot-proof-docs/SKILL.md) | Simplify documentation for clarity and scannability with approval-gated edits |
 | [`cmd-local-repo-skills`](skills/cmd-local-repo-skills/SKILL.md) | Scaffold cross-tool repo-local skills with canonical source in `.agents/skills/` and symlinks |
@@ -68,11 +66,11 @@ Skills I use daily but might rename or delete in the future. I prefix them with 
 | [`cmd-pr-description`](skills/cmd-pr-description/SKILL.md) | Generate concise PR descriptions by analyzing the diff against a base branch |
 | [`cmd-pr-gh-comments`](skills/cmd-pr-gh-comments/SKILL.md) | Triage and resolve GitHub PR review comments with categorized action plans |
 | [`cmd-pr-review-prepare`](skills/cmd-pr-review-prepare/SKILL.md) | Prepare branch for code review by building context and identifying issues |
-| [`cmd-pr-sweep`](skills/cmd-pr-sweep/SKILL.md) | Review changes for test gaps, simplification, naming consistency, reuse, and TODO quality |
+| [`cmd-pr-edgecase`](skills/cmd-pr-edgecase/SKILL.md) | Review branch changes for test gaps, logic edge cases, and failure modes |
 | [`cmd-pr-test-plan`](skills/cmd-pr-test-plan/SKILL.md) | Generate manual test plans with verified commands and pass/fail criteria |
 | [`cmd-productionize`](skills/cmd-productionize/SKILL.md) | Transform apps into production-ready deployments with framework-specific optimization |
 | [`cmd-proofread`](skills/cmd-proofread/SKILL.md) | Proofread posts for spelling, grammar, repetition, logic, weak arguments, and broken links |
-| [`cmd-python-stylizer`](skills/cmd-python-stylizer/SKILL.md) | Analyze Python code for naming, structure, nesting, and cognitive load reduction |
+| [`cmd-sculpt-code`](skills/cmd-sculpt-code/SKILL.md) | Reshape code for readability, naming, structure, TODOs, and reduced surface area |
 | [`cmd-rfc-review`](skills/cmd-rfc-review/SKILL.md) | Review RFCs for problem clarity, compliance, security, and performance using SCQA |
 | [`cmd-rss-feed-generator`](skills/cmd-rss-feed-generator/SKILL.md) | Generate Python RSS feed scrapers with hourly GitHub Actions integration |
 | [`cmd-scope-sweep`](skills/cmd-scope-sweep/SKILL.md) | Final pass to identify missed items, edge cases, and risks before closing scope |
