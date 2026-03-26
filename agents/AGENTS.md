@@ -221,6 +221,7 @@ Each skill directory contains a `SKILL.md` with YAML frontmatter. All `cmd-*` sk
 - `cmd-sculpt-code` - Reshape code quality: naming, structure, TODOs, surface area
 - `cmd-pr-edgecase` - Review PR for test gaps, logic edge cases, failure modes
 - `cmd-scope-sweep` - Final pass to identify missed items and risks
+- `cmd-follow-up` - Post-implementation reflection: missed work, simplifications, idiomatic fixes
 - `cmd-rfc-review` - Review RFCs using SCQA framework
 - `cmd-chain-halt-code-reviewer` - Review protocol code for chain halt risks
 - `cmd-rss-feed-generator` - Generate Python RSS feed scrapers

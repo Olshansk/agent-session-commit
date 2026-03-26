@@ -71,6 +71,7 @@ Skills I use daily but might rename or delete in the future. I prefix them with 
 | [`cmd-pr-test-plan`](skills/cmd-pr-test-plan/SKILL.md)                         | Generate manual test plans with verified commands and pass/fail criteria                      |
 | [`cmd-productionize`](skills/cmd-productionize/SKILL.md)                       | Transform apps into production-ready deployments with framework-specific optimization         |
 | [`cmd-proofread`](skills/cmd-proofread/SKILL.md)                               | Proofread posts for spelling, grammar, repetition, logic, weak arguments, and broken links    |
+| [`cmd-follow-up`](skills/cmd-follow-up/SKILL.md)                               | Post-implementation reflection — surface missed work, simplifications, and idiomatic fixes    |
 | [`cmd-sculpt-code`](skills/cmd-sculpt-code/SKILL.md)                           | Reshape code for readability, naming, structure, TODOs, and reduced surface area              |
 | [`cmd-rfc-review`](skills/cmd-rfc-review/SKILL.md)                             | Review RFCs for problem clarity, compliance, security, and performance using SCQA             |
 | [`cmd-rss-feed-generator`](skills/cmd-rss-feed-generator/SKILL.md)             | Generate Python RSS feed scrapers with hourly GitHub Actions integration                      |
