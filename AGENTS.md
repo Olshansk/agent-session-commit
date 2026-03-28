@@ -102,13 +102,14 @@ Scripts:
 - Scripts must be non-interactive and safe for agent execution
 - Prefer structured stdout and diagnostic stderr in scripts
 
-## Adding a New Skill
+## Modifying Skills (Add, Edit, Remove)
 
-When a new skill is added to `skills/`:
+Whenever a skill is added, edited, or removed in `skills/`, update **all** of the following:
 
-1. Add a hyperlinked row to the appropriate table in `README.md` (link format: `[skill-name](skills/skill-name/SKILL.md)`)
-2. Keep the table sorted alphabetically
-3. Run `make link-skills` to create symlinks
+1. **`README.md`** — add, update, or remove the hyperlinked row in the appropriate table (link format: `[skill-name](skills/skill-name/SKILL.md)`). Keep the table sorted alphabetically.
+2. **`~/.claude/CLAUDE.md`** — add, update, or remove the entry in the "Task skills" list under "Custom Skills"
+3. **`make link-skills`** — run to create or clean up symlinks
+4. **Verify** — confirm the skill appears (or is removed) in `~/.claude/skills/` after linking
 
 ## Documentation Standards
 
