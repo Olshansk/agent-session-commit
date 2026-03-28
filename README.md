@@ -59,6 +59,7 @@ Skills I use daily but might rename or delete in the future. I prefix them with 
 | Skill                                                                          | Description                                                                                   |
 | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
 | [`cmd-chain-halt-code-reviewer`](skills/cmd-chain-halt-code-reviewer/SKILL.md) | Review protocol code for chain halt risks, non-determinism, and onchain behavior bugs         |
+| [`cmd-email-md`](skills/cmd-email-md/SKILL.md)                                 | Convert markdown to email-safe HTML with inline styles and cross-client compatibility         |
 | [`cmd-gh-issue`](skills/cmd-gh-issue/SKILL.md)                                 | Create structured GitHub issues from conversation context using `gh` CLI                      |
 | [`cmd-idiot-proof-docs`](skills/cmd-idiot-proof-docs/SKILL.md)                 | Simplify documentation for clarity and scannability with approval-gated edits                 |
 | [`cmd-local-repo-skills`](skills/cmd-local-repo-skills/SKILL.md)               | Scaffold cross-tool repo-local skills with canonical source in `.agents/skills/` and symlinks |

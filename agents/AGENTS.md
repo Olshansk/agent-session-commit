@@ -226,6 +226,7 @@ Each skill directory contains a `SKILL.md` with YAML frontmatter. All `cmd-*` sk
 - `cmd-chain-halt-code-reviewer` - Review protocol code for chain halt risks
 - `cmd-rss-feed-generator` - Generate Python RSS feed scrapers
 - `cmd-idiot-proof-docs` - Simplify documentation for clarity
+- `cmd-email-md` - Convert markdown to email-safe HTML with inline styles
 - `cmd-gp-issue` - Create GitHub issues from conversation context
 - `debug-timeouts` - Debug timeout hierarchies across application layers
 
@@ -237,6 +238,17 @@ Each skill directory contains a `SKILL.md` with YAML frontmatter. All `cmd-*` sk
 - Break long paragraphs (>3 sentences) or run-on sentences into bullet points.
 - Start new sentences on new lines when they stand alone.
 - Never remove any content from the original input.
+- When responding to multiple questions or topics at once, number each item (### 1., ### 2., etc.) so the user can easily reference specific points in follow-ups.
+
+## Plan Files
+
+When asked to "save this plan for later" or "document this for later", write to the project's `plans/` directory using the naming convention:
+
+```
+plans/{name}_{yyyy}_{mm}_{dd}.md
+```
+
+Example: `plans/frontend-logic-cleanup_2026_03_28.md`
 
 ## TODO Comment Standards
 

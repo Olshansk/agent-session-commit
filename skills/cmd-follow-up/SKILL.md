@@ -25,6 +25,7 @@ Post-implementation reflection pass. Run after completing a task to catch loose 
 - Did you skip something the user asked for?
 - Are there commented-out code blocks or placeholder values that shouldn't ship?
 - Are there missing error cases, edge cases, or validations at system boundaries?
+- Are there fallback/legacy code paths? If so, **ask the user explicitly** whether to keep, remove, or flag them — don't assume backward compatibility is wanted.
 
 ### 2. More idiomatic?
 
