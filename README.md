@@ -63,6 +63,7 @@ Skills I use daily but might rename or delete in the future. I prefix them with 
 | [`cmd-gh-issue`](skills/cmd-gh-issue/SKILL.md)                                 | Create structured GitHub issues from conversation context using `gh` CLI                      |
 | [`cmd-idiot-proof-docs`](skills/cmd-idiot-proof-docs/SKILL.md)                 | Simplify documentation for clarity and scannability with approval-gated edits                 |
 | [`cmd-local-repo-skills`](skills/cmd-local-repo-skills/SKILL.md)               | Scaffold cross-tool repo-local skills with canonical source in `.agents/skills/` and symlinks |
+| [`cmd-persona`](skills/cmd-persona/SKILL.md)                                   | Prime the agent with a behavioral persona for the conversation                                |
 | [`cmd-pr-build-context`](skills/cmd-pr-build-context/SKILL.md)                 | Build high-signal PR context with diff analysis, risk assessment, and discussion questions    |
 | [`cmd-pr-conflict-resolver`](skills/cmd-pr-conflict-resolver/SKILL.md)         | Resolve merge conflicts with context-aware 3-tier classification and escalation               |
 | [`cmd-pr-description`](skills/cmd-pr-description/SKILL.md)                     | Generate concise PR descriptions by analyzing the diff against a base branch                  |

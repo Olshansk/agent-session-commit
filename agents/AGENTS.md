@@ -228,6 +228,7 @@ Each skill directory contains a `SKILL.md` with YAML frontmatter. All `cmd-*` sk
 - `cmd-idiot-proof-docs` - Simplify documentation for clarity
 - `cmd-email-md` - Convert markdown to email-safe HTML with inline styles
 - `cmd-gp-issue` - Create GitHub issues from conversation context
+- `cmd-persona` - Prime the agent with a behavioral persona for the conversation
 - `debug-timeouts` - Debug timeout hierarchies across application layers
 
 ## General Guidelines in code
