@@ -143,7 +143,7 @@ PR titles must follow this format:
 ## Output Format
 
 ```markdown
-_tl;dr This is a single sentence summarizing the most important outcome of this PR in 100-200 characters._
+_tl;dr Single sentence, 120 characters max, summarizing the most important outcome of this PR._
 
 ## Summary
 
@@ -153,11 +153,10 @@ _tl;dr This is a single sentence summarizing the most important outcome of this 
 
 ## Feature Diff
 
-| Component                          | Before                                     | After                                    |
-| ---------------------------------- | ------------------------------------------ | ---------------------------------------- |
-| 1-3 words describing the component | 1 sentence describing how it worked before | 1 sentence describing how it works after |
-| ...                                | ...                                        | ...                                      |
-| ...                                | ...                                        | ...                                      |
+| S    | Component                          | Before                                     | After                                    |
+| ---- | ---------------------------------- | ------------------------------------------ | ---------------------------------------- |
+| 🟢/🔴/… | 1-3 words describing the component | 1 sentence describing how it worked before | 1 sentence describing how it works after |
+| …    | ...                                | ...                                        | ...                                      |
 
 ## Details
 
@@ -181,7 +180,7 @@ _tl;dr This is a single sentence summarizing the most important outcome of this 
 
 ### tl;dr
 
-- Single sentence, max ~120 characters
+- Single sentence, **120 characters max** (hard ceiling)
 - Product-level: what does the user/operator/developer get?
 - No implementation details, no file names
 
@@ -193,7 +192,8 @@ _tl;dr This is a single sentence summarizing the most important outcome of this 
 - Plain language after the dash: one sentence, no jargon
 - No implementation details: reviewers will read the diff for that
 - No fluff: skip "minor cleanup", "refactor", "update docs" unless they deliver real value
-- Start from the most impactful change and work down
+- **Order by priority/impact, highest first** — the first bullet should be the most important change in the PR
+- Use backticks for code references: file names, paths, commands, config keys, env vars, endpoints, function names
 
 ### Feature Diff
 
@@ -206,6 +206,17 @@ _tl;dr This is a single sentence summarizing the most important outcome of this 
 - Keep cells concise — short phrases, not sentences
 - Group related rows; aim for 3-10 rows
 - Good component examples: API endpoint, DB table/column, config key, env var, dependency version, CLI flag, permission, error behavior
+- Use backticks for code references in Component, Before, and After cells (e.g., `sessions` table, `/auth/login`, `TOKEN_TTL`)
+- **Severity column (S)**: Every row must have a severity emoji as the first column:
+
+| Emoji | Label | When to use |
+|-------|-------|-------------|
+| 🔴 | Critical fix | Bug fix for broken/incorrect behavior |
+| 🟡 | Improvement | Enhancement to existing behavior |
+| 🟢 | New feature | Net-new capability |
+| ⚪ | Neutral | Config, docs, chore, cleanup |
+| ⚙️ | Infra/tooling | CI, build, dev tooling changes |
+| ⚠️ | Breaking | Breaking change or deprecation |
 
 ### Details
 
@@ -218,7 +229,7 @@ _tl;dr This is a single sentence summarizing the most important outcome of this 
 
 ### General Details
 
-- Use backticks for code references (`file.py`, `get_user()`, `/api/v1/users`)
+- **Use backticks everywhere for code references** — this applies to ALL sections (tl;dr excluded): file names (`file.py`), file paths (`src/auth/`), commands (`npm run build`), config keys (`TOKEN_TTL`), env vars (`NODE_ENV`), endpoints (`/api/v1/users`), function names (`getUser()`), table/column names (`sessions.token`)
 - Italicize or bold keywords if it helps readability
 
 ## Example Output
@@ -229,19 +240,19 @@ _tl;dr Users can now log in with email/password and stay authenticated across br
 ## Summary
 
 - **Session-based login**: Users authenticate with email/password and maintain sessions across browser restarts
-- **Faster auth checks**: Session lookups use an indexed token column instead of scanning the full users table
+- **Faster auth checks**: Session lookups use an indexed `token` column instead of scanning the full `users` table
 - **Remember-me support**: Users can opt into 30-day sessions instead of the default 24-hour expiry
 
 ## Feature Diff
 
-| Component        | Before                     | After                                           |
-| ---------------- | -------------------------- | ----------------------------------------------- |
-| Auth method      | API key only               | Email/password + session cookie                 |
-| Session duration | N/A                        | 24 hours (default), 30 days (remember-me)       |
-| `sessions` table | N/A                        | New table with `user_id`, `token`, `expires_at` |
-| Token lookup     | Full table scan on `users` | Indexed lookup on `sessions.token`              |
-| `/auth/login`    | N/A                        | New endpoint                                    |
-| `/auth/logout`   | N/A                        | New endpoint                                    |
+| S    | Component        | Before                     | After                                           |
+| ---- | ---------------- | -------------------------- | ----------------------------------------------- |
+| 🟢 | Auth method      | API key only               | Email/password + session cookie                 |
+| 🟢 | Session duration | `N/A`                      | 24 hours (default), 30 days (remember-me)       |
+| 🟢 | `sessions` table | `N/A`                      | New table with `user_id`, `token`, `expires_at` |
+| 🟡 | Token lookup     | Full table scan on `users` | Indexed lookup on `sessions.token`              |
+| 🟢 | `/auth/login`    | `N/A`                      | New endpoint                                    |
+| 🟢 | `/auth/logout`   | `N/A`                      | New endpoint                                    |
 
 ## Details
 
