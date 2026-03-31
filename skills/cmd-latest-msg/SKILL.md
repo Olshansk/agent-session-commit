@@ -12,15 +12,16 @@ Persist the last agent message to disk for cross-agent visibility.
 
 1. Parse the user's input after `/cmd-latest-msg`.
 
-2. **No argument** — print usage and stop:
+2. **`help`** (or no argument) — print usage and stop:
 
    ```
    Usage:
-     /cmd-latest-msg store          — save your last message
-     /cmd-latest-msg read <agent>   — read latest from claude|codex|gemini
+     /cmd-latest-msg save             — save your last message
+     /cmd-latest-msg use <agent>      — read latest from claude|codex|gemini
+     /cmd-latest-msg help             — show this usage
    ```
 
-3. **`store`** — save the last assistant message:
+3. **`save`** — save the last assistant message:
 
    a. Determine which agent you are:
       - Claude Code → `claude`
@@ -48,7 +49,7 @@ Persist the last agent message to disk for cross-agent visibility.
      /tmp/agents/<agent>/<timestamp>.md
    ```
 
-4. **`read <agent>`** — display another agent's latest message:
+4. **`use <agent>`** — display another agent's latest message:
 
    a. Validate `<agent>` is one of: `claude`, `codex`, `gemini`.
 
