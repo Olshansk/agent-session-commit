@@ -226,6 +226,7 @@ Each skill directory contains a `SKILL.md` with YAML frontmatter. All `cmd-*` sk
 - `cmd-chain-halt-code-reviewer` - Review protocol code for chain halt risks
 - `cmd-rss-feed-generator` - Generate Python RSS feed scrapers
 - `cmd-idiot-proof-docs` - Simplify documentation for clarity
+- `cmd-latest-msg` - Store or retrieve the latest agent message to /tmp/agents/{agent}/
 - `cmd-email-md` - Convert markdown to email-safe HTML with inline styles
 - `cmd-gp-issue` - Create GitHub issues from conversation context
 - `cmd-persona` - Prime the agent with a behavioral persona for the conversation
