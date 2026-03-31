@@ -158,6 +158,8 @@ _tl;dr Single sentence, 120 characters max, summarizing the most important outco
 | 🟢/🔴/… | 1-3 words describing the component | 1 sentence describing how it worked before | 1 sentence describing how it works after |
 | …    | ...                                | ...                                        | ...                                      |
 
+> 🔴 Critical fix · 🟡 Improvement · 🟢 New feature · ⚪ Neutral · ⚙️ Infra/tooling · ⚠️ Breaking
+
 ## Details
 
 <details>
@@ -175,6 +177,45 @@ _tl;dr Single sentence, 120 characters max, summarizing the most important outco
 
 </details>
 ```
+
+## GitHub Admonitions
+
+Use [GitHub admonitions](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts) at the **very top** of the description (before the tl;dr) when the PR has important context that reviewers need upfront. Do NOT use admonitions by default — only when one of the situations below applies.
+
+**Syntax:**
+
+```markdown
+> [!NOTE]
+> Useful information that users should know, even when skimming content.
+
+> [!TIP]
+> Helpful advice for doing things better or more easily.
+
+> [!IMPORTANT]
+> Key information users need to know to achieve their goal.
+
+> [!WARNING]
+> Urgent info that needs immediate user attention to avoid problems.
+
+> [!CAUTION]
+> Advises about risks or negative outcomes of certain actions.
+```
+
+**When to use each type:**
+
+| Type | When to use |
+|------|-------------|
+| `NOTE` | PR is a follow-up/review of another PR, replaces a previous approach, or has non-obvious scope context |
+| `TIP` | PR unlocks a workflow or has a recommended migration/adoption path reviewers should know |
+| `IMPORTANT` | PR requires a specific merge order, has deployment prerequisites, or needs coordinated rollout |
+| `WARNING` | PR includes a breaking change, requires a migration, or has a tight deadline |
+| `CAUTION` | PR touches sensitive systems (auth, billing, data deletion) or has irreversible side effects |
+
+**Rules:**
+- Maximum ONE admonition per PR description (pick the most important)
+- Keep it to 1-3 sentences — enough context to orient the reviewer, not a full explanation
+- Reference related PRs/issues by number (e.g., #509) so GitHub auto-links them
+- Place BEFORE the tl;dr line
 
 ## Section Rules
 
@@ -207,6 +248,7 @@ _tl;dr Single sentence, 120 characters max, summarizing the most important outco
 - Group related rows; aim for 3-10 rows
 - Good component examples: API endpoint, DB table/column, config key, env var, dependency version, CLI flag, permission, error behavior
 - Use backticks for code references in Component, Before, and After cells (e.g., `sessions` table, `/auth/login`, `TOKEN_TTL`)
+- **Legend**: Always include a one-line legend below the Feature Diff table as a blockquote: `> 🔴 Critical fix · 🟡 Improvement · 🟢 New feature · ⚪ Neutral · ⚙️ Infra/tooling · ⚠️ Breaking`
 - **Severity column (S)**: Every row must have a severity emoji as the first column:
 
 | Emoji | Label | When to use |
@@ -253,6 +295,8 @@ _tl;dr Users can now log in with email/password and stay authenticated across br
 | 🟡 | Token lookup     | Full table scan on `users` | Indexed lookup on `sessions.token`              |
 | 🟢 | `/auth/login`    | `N/A`                      | New endpoint                                    |
 | 🟢 | `/auth/logout`   | `N/A`                      | New endpoint                                    |
+
+> 🔴 Critical fix · 🟡 Improvement · 🟢 New feature · ⚪ Neutral · ⚙️ Infra/tooling · ⚠️ Breaking
 
 ## Details
 
