@@ -1,7 +1,7 @@
 ---
 name: cmd-gh-issue
 description: Create structured GitHub issues from conversation context using gh CLI
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Create GitHub Issue from Conversation

@@ -1,7 +1,7 @@
 ---
 name: cmd-persona
 description: Prime the agent with a behavioral persona for the conversation
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Persona <!-- omit in toc -->

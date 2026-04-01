@@ -1,7 +1,7 @@
 ---
 name: cmd-pr-test-plan
 description: Generate manual test plans for PR changes with verified commands and pass/fail criteria
-disable-model-invocation: true
+disable-model-invocation: false
 context: fork
 agent: general-purpose
 ---

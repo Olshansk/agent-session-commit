@@ -1,7 +1,7 @@
 ---
 name: cmd-pr-build-context
 description: Build high-signal PR context for review with diff analysis, risk assessment, and discussion questions
-disable-model-invocation: true
+disable-model-invocation: false
 context: fork
 agent: general-purpose
 ---

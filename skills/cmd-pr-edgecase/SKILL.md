@@ -1,7 +1,7 @@
 ---
 name: cmd-pr-edgecase
 description: Review branch changes for test gaps, logic edge cases, failure modes, and integration risks
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # PR Edge Case Review

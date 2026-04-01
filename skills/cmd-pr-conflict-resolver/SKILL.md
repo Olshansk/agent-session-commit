@@ -1,7 +1,7 @@
 ---
 name: cmd-pr-conflict-resolver
 description: Resolve merge conflicts systematically with context-aware 3-tier classification and escalation protocol
-disable-model-invocation: true
+disable-model-invocation: false
 context: fork
 agent: general-purpose
 ---

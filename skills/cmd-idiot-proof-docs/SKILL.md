@@ -1,7 +1,7 @@
 ---
 name: cmd-idiot-proof-docs
 description: Simplify documentation for clarity and scannability with approval-gated edits
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Simple Docs for Humans and Agents

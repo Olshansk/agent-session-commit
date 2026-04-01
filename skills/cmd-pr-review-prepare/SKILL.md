@@ -1,7 +1,7 @@
 ---
 name: cmd-pr-review-prepare
 description: Prepare branch for code review by building context, identifying issues, and suggesting improvements
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Code Review Preparation Agent

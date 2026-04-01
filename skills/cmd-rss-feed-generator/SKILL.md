@@ -1,7 +1,7 @@
 ---
 name: cmd-rss-feed-generator
 description: Generate Python RSS feed scrapers from blog websites, integrated with hourly GitHub Actions
-disable-model-invocation: true
+disable-model-invocation: false
 context: fork
 agent: general-purpose
 ---

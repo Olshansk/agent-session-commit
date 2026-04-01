@@ -1,7 +1,7 @@
 ---
 name: cmd-email-md
 description: Convert markdown to email-safe HTML with inline styles and cross-client compatibility. Use when writing newsletters, transactional emails, or any HTML email from markdown source.
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Markdown to Email HTML

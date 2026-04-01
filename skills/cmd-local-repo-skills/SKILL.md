@@ -1,7 +1,7 @@
 ---
 name: cmd-local-repo-skills
 description: Scaffold cross-tool repo-local skills and agent instructions with canonical source in .agents/ and symlinks for Claude, Codex, Gemini, and Codex-home
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Repo-Local Skill Manager <!-- omit in toc -->
@@ -250,7 +250,7 @@ Gitignore: ✅ updated
  ---
  name: <skill-name>
  description: <one-line description>
- disable-model-invocation: true
+ disable-model-invocation: false
  ---
 
  # Skill Title <!-- omit in toc -->

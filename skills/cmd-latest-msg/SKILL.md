@@ -1,7 +1,7 @@
 ---
 name: cmd-latest-msg
 description: Store or retrieve the latest agent message to /tmp/agents/{agent}/
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Latest Message <!-- omit in toc -->

@@ -1,7 +1,7 @@
 ---
 name: cmd-productionize
 description: Transform applications into production-ready deployments with systematic analysis, improvement, and framework-specific optimization
-disable-model-invocation: true
+disable-model-invocation: false
 context: fork
 agent: general-purpose
 ---

@@ -1,7 +1,7 @@
 ---
 name: cmd-proofread
 description: Proofread posts before publishing for spelling, grammar, repetition, logic, weak arguments, broken links, and optionally reformat for skimmability
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Proofread
