@@ -204,7 +204,7 @@ swiftlint --fix
 
 > **After `npx skills add olshansk/agent-skills`:** always run `make link-skills` in `~/workspace/agent-skills` to restore direct symlinks. npx creates copies that break the live-edit flow.
 
-Each skill directory contains a `SKILL.md` with YAML frontmatter. All `cmd-*` skills have `disable-model-invocation: true` (user invokes manually via `/cmd-*`).
+Each skill directory contains a `SKILL.md` with YAML frontmatter. Most `cmd-*` skills have `disable-model-invocation: true` (user invokes manually via `/cmd-*`). Exception: `cmd-store-plan` auto-triggers on phrases like "store this plan" / "save this plan for later".
 
 **Reference skills:**
 
@@ -230,7 +230,18 @@ Each skill directory contains a `SKILL.md` with YAML frontmatter. All `cmd-*` sk
 - `cmd-email-md` - Convert markdown to email-safe HTML with inline styles
 - `cmd-gp-issue` - Create GitHub issues from conversation context
 - `cmd-persona` - Prime the agent with a behavioral persona for the conversation
+- `cmd-store-plan` - Capture conversation plans/decisions into structured markdown in `plans/`
 - `debug-timeouts` - Debug timeout hierarchies across application layers
+
+## Communication Format Preferences
+
+When presenting structured comparisons, use markdown tables with emoji status columns:
+
+- **Test results**: Matrix with ✅/❌/🔴/⏭️ status per item and one-line details
+- **Before/After diffs**: Feature diff tables with severity emoji (🔴 Critical fix, 🟡 Improvement, 🟢 New feature, ⚪ Neutral, ⚙️ Infra)
+- **Behavioral matrices**: Config/env combinations → expected behavior per row
+- **Bug summaries**: Bug | Root Cause | Fix columns
+- **Planning/comparison**: Use tables over prose whenever there are 3+ items being compared across 2+ dimensions
 
 ## General Guidelines in code
 

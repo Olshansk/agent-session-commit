@@ -1,6 +1,6 @@
 ---
 name: cmd-pr-test-plan
-description: Generate manual test plans for PR changes with verified commands and pass/fail criteria
+description: Generate manual test plans for PR changes — focused on hands-on verification a developer would do, not unit-test edge cases
 disable-model-invocation: false
 context: fork
 agent: general-purpose
@@ -8,7 +8,7 @@ agent: general-purpose
 
 # PR Test Plan
 
-Generate a manual test plan for the changes in the current branch. The plan should give a reviewer everything they need to verify the PR -- copy-paste commands, clear pass/fail criteria, and logical grouping by change area.
+Generate a manual test plan for the changes in the current branch. The plan should focus on what a developer/reviewer needs to **manually verify** — real user flows, integration behavior, and observable outcomes. Leave input validation, error branches, and edge cases to unit tests.
 
 ## Instructions
 
@@ -76,46 +76,50 @@ Should I generate the test plan for all 3, or would you like to adjust?
 
 For each confirmed category, generate a test section following these rules:
 
+#### Severity & importance markers
+
+Tag every test step with one of these emojis in the step title:
+
+| Emoji | Meaning | When to use |
+|-------|---------|-------------|
+| 🔴 | **Critical** | Core functionality — if this fails, the feature is broken |
+| 🟢 | **Expected** | Standard behavior that should work — moderate confidence but worth verifying |
+| 🔵 | **Nice-to-have** | Polish, UX, non-blocking — skip if short on time |
+
+Example: `1a. 🔴 **Pre-register a profile end-to-end**`
+
 #### Formatting rules
 
 - **Numbered sections** with separator lines (`---`) between them
 - **Numbered sub-steps** within each section (1a, 1b, 1c...)
-- Each sub-step has a **bold title** describing what to test
-- Each sub-step has a **copy-paste command** in a fenced code block
+- Each sub-step has an **emoji tag + bold title** describing what to test
+- Each sub-step has a **copy-paste command** in a fenced code block (or manual UI steps if applicable)
 - Each sub-step has a **"Verify:"** line stating what success looks like
 - **One command per code block** -- never stack multiple commands in one block with comments between them
 - Use **Makefile targets** when available instead of raw tool commands
 - For commands requiring env vars, put them inline: `GROVE_API_URL=http://localhost:8000 make test_e2e_suite`
 
-#### What to include per category
+#### What to focus on (and what to skip)
 
-**Feature code:**
-- Happy path: the main thing the feature does, verified end-to-end
-- Edge cases: invalid inputs, missing arguments, boundary values
-- Help text / discoverability: `--help` output shows new flags/options
-- Error messages: meaningful output on failure, correct exit codes
+**DO include — things you must verify manually:**
+- Happy-path user flows end-to-end (the main thing the feature does)
+- Integration points — does component A actually talk to component B correctly?
+- State transitions — does data persist, propagate, and display correctly across the system?
+- Resumption / retry behavior — if a multi-step process fails midway, does retry work?
+- UI rendering — does the new section/field/page show up and look right?
+- API response shape — do new fields appear in real responses?
+- Existing behavior preserved — does the change break anything that was already working?
 
-**Configuration / docs:**
-- Validate file format (JSON parse, YAML lint, markdown render)
-- Verify expected files exist and unexpected files are gone
-- If publishable: serve locally and fetch to verify
-
-**Tests:**
-- Run the relevant test suite(s) with the project's standard commands
-- Call out expected pass counts if known from prior runs
-- List individual test commands for spot-checking specific fixes
-
-**Build / deploy:**
-- Dry-run build or deploy commands
-- Verify targets still work after changes
-
-**Deletions:**
-- Confirm removed files are actually gone
-- Verify nothing references the deleted files (grep for imports/includes)
+**DO NOT include — leave these for unit tests:**
+- Invalid input validation (wrong types, missing fields, malformed data)
+- Boundary values and off-by-one checks
+- Error message wording verification
+- Permission/auth edge cases (401/403 responses)
+- Schema validation failures
 
 #### Quick smoke test section
 
-Always end with a "Quick Smoke Test" section -- the 2-3 commands a reviewer would run if they only have 60 seconds.
+Always end with a "Quick Smoke Test" section -- the 2-3 commands a reviewer would run if they only have 60 seconds. Tag each with the appropriate emoji.
 
 ### Step 6: Write output
 
@@ -127,9 +131,9 @@ Terminal summary format:
 ```
 Wrote TEST_PLAN.md with 4 sections:
 
-  1. CLI Agent Mode -- 7 test steps (happy path, errors, help text)
-  2. Skills Restructuring -- 6 test steps (validation, file checks, local serve)
-  3. Automated Tests -- 4 test steps (unit, CLI, SDK, E2E suite)
+  1. CLI Agent Mode -- 4 test steps (🔴×2, 🟢×1, 🔵×1)
+  2. Skills Restructuring -- 3 test steps (🔴×1, 🟢×2)
+  3. Automated Tests -- 2 test steps (🟢×2)
   4. Quick Smoke Test -- 3 commands
 
 Run `cat TEST_PLAN.md` to view the full plan.
@@ -139,6 +143,6 @@ Run `cat TEST_PLAN.md` to view the full plan.
 
 Follow the same style used in `cmd-pr-description`:
 - **Bold the what**, plain text the how
-- No fluff -- every step must verify something
+- No fluff -- every step must verify something real that a human needs to see
 - Copy-paste ready -- a reviewer should never need to edit a command
 - Separate code blocks -- one command per block, bold header above it

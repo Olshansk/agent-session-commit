@@ -14,7 +14,7 @@ Copy to clipboard: `cat PR_DESCRIPTION.md | pbcopy`
 
 - [Instructions](#instructions)
   - [1. Determine the base branch](#1-determine-the-base-branch)
-  - [2. Analyze the changes against the default branch](#2-analyze-the-changes-against-the-default-branch)
+  - [2. Analyze the changes against the base branch](#2-analyze-the-changes-against-the-base-branch)
   - [3. Generate the title and description using the format below](#3-generate-the-title-and-description-using-the-format-below)
   - [4. Ask user to approve, edit, or reject](#4-ask-user-to-approve-edit-or-reject)
   - [5. On approval: commit, create/update PR](#5-on-approval-commit-createupdate-pr)
@@ -32,9 +32,9 @@ Copy to clipboard: `cat PR_DESCRIPTION.md | pbcopy`
 
 ### 1. Determine the base branch
 
-First, determine the base branch using the repository's default branch.
+**If the user passed a branch name as an argument** (e.g. `/cmd-pr-description feature-branch`), use that as `BASE_BRANCH`. Skip auto-detection entirely.
 
-Try these methods in order until one succeeds:
+**Otherwise**, auto-detect the repository's default branch. Try these methods in order until one succeeds:
 
 **Method 1 - GitHub CLI**
 
@@ -56,7 +56,15 @@ BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^re
 
 **IMPORTANT:** Do NOT assume `master` or `main` as a fallback. If all methods fail, ask the user which branch to use as the base.
 
-### 2. Analyze the changes against the default branch
+**Validation:** Regardless of how `BASE_BRANCH` was determined, verify it exists before proceeding:
+
+```bash
+git rev-parse --verify "$BASE_BRANCH" 2>/dev/null || git rev-parse --verify "origin/$BASE_BRANCH" 2>/dev/null
+```
+
+If the branch does not exist locally or on the remote, stop and ask the user to confirm the branch name.
+
+### 2. Analyze the changes against the base branch
 
 ```bash
 git diff $BASE_BRANCH --stat -- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"
@@ -111,10 +119,10 @@ If a PR exists, update it:
 gh pr edit --title "<generated title>" --body "$(cat PR_DESCRIPTION.md)"
 ```
 
-If no PR exists, create one:
+If no PR exists, create one. Always pass `--base` so the PR targets the correct branch (especially important when the base is not the repo default):
 
 ```bash
-gh pr create --title "<generated title>" --body "$(cat PR_DESCRIPTION.md)"
+gh pr create --base "$BASE_BRANCH" --title "<generated title>" --body "$(cat PR_DESCRIPTION.md)"
 ```
 
 ## Title Format

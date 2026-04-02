@@ -17,17 +17,18 @@ Persist the last agent message to disk for cross-agent visibility.
    ```
    Usage:
      /cmd-latest-msg save             — save your last message
+     /cmd-latest-msg use              — read latest from the current agent
      /cmd-latest-msg use <agent>      — read latest from claude|codex|gemini
      /cmd-latest-msg help             — show this usage
    ```
 
 3. **`save`** — save the last assistant message:
 
-   a. Determine which agent you are:
+   a. Determine which agent you are from runtime context:
       - Claude Code → `claude`
       - Codex CLI → `codex`
       - Gemini CLI → `gemini`
-      - Default → `claude`
+      - If inference fails, default to `codex`
 
    b. Create the output directory:
 
@@ -49,7 +50,15 @@ Persist the last agent message to disk for cross-agent visibility.
      /tmp/agents/<agent>/<timestamp>.md
    ```
 
-4. **`use <agent>`** — display another agent's latest message:
+4. **`use`** — display the latest message for the current agent:
+
+   a. Infer the current agent using the same runtime-context rules as `save`.
+
+   b. Read and display `/tmp/agents/<agent>/latest.md`.
+
+   c. If the file doesn't exist, say: `No messages found for <agent>.`
+
+5. **`use <agent>`** — display another agent's latest message:
 
    a. Validate `<agent>` is one of: `claude`, `codex`, `gemini`.
 
