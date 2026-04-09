@@ -4,15 +4,18 @@
 # ============================================================================
 # ANSI Color Codes
 # ============================================================================
-GREEN   := \033[0;32m
-YELLOW  := \033[1;33m
-BLUE    := \033[0;34m
-CYAN    := \033[0;36m
-RED     := \033[0;31m
-MAGENTA := \033[0;35m
-BOLD    := \033[1m
-DIM     := \033[2m
-RESET   := \033[0m
+GREEN     := \033[0;32m
+YELLOW    := \033[1;33m
+BLUE      := \033[0;34m
+CYAN      := \033[0;36m
+RED       := \033[0;31m
+MAGENTA   := \033[0;35m
+BLACK     := \033[0;30m
+BOLD      := \033[1m
+DIM       := \033[2m
+RESET     := \033[0m
+BG_YELLOW := \033[43m
+BG_BLUE   := \033[44m
 
 # ============================================================================
 # Status Symbols
@@ -47,7 +50,11 @@ define print_section
 	@printf "\n$(CYAN)$(BOLD)%s$(RESET)\n" "$(1)"
 endef
 
-# Alias for consistency with grove_api2 style
+define print_section
+	@printf "\n$(CYAN)$(BOLD)%s$(RESET)\n" "$(1)"
+endef
+
+# Alias for backward compatibility
 define print_info_section
 	@printf "\n$(CYAN)$(BOLD)%s$(RESET)\n" "$(1)"
 endef

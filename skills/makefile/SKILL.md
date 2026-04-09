@@ -1,6 +1,6 @@
 ---
 name: makefile
-description: "Create or improve Makefiles with minimal complexity. Templates available: base, python-uv, python-fastapi, nodejs, go, chrome-extension, flutter, electron."
+description: "Create or improve Makefiles with minimal complexity. Templates available: base, python-uv, python-fastapi, postgres, nodejs, go, chrome-extension, flutter, electron."
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 ---
 
@@ -34,6 +34,7 @@ For new projects, use the appropriate template:
 | Any project | `templates/base.mk` | Minimal |
 | Python with uv | `templates/python-uv.mk` | Standard |
 | Python FastAPI | `templates/python-fastapi.mk` | Full-featured |
+| PostgreSQL + Alembic | `templates/postgres.mk` | Standard |
 | Node.js | `templates/nodejs.mk` | Standard |
 | Go | `templates/go.mk` | Standard |
 | Chrome Extension | `templates/chrome-extension.mk` | Modular |
@@ -50,7 +51,9 @@ makefiles/
   colors.mk                           # ANSI colors & print helpers
   common.mk                           # Shell flags, VERBOSE mode, guards
   build.mk                            # Build zip, version bump, releases
-  dev.mk                              # Test, lint, clean, install
+  dev.mk                              # Lint, clean, install
+  test.mk                             # Unit tests, E2E tests, coverage
+  env.mk                              # Environment setup, dependency checks
 ```
 
 Copy from `templates/chrome-extension-modules/` to your project's `makefiles/` directory.
@@ -58,7 +61,8 @@ Copy from `templates/chrome-extension-modules/` to your project's `makefiles/` d
 **Key features:**
 - `build-release` - Version bump menu (major/minor/patch) + zip for Chrome Web Store
 - `build-beta` - (Optional) GitHub releases with `gh` CLI
-- `dev-test` / `dev-test-e2e` - Vitest + Playwright testing
+- `test-unit` / `test-e2e` - Vitest + Playwright testing
+- `test-unit-<module>` / `test-e2e-<module>` - Per-module test targets
 - `VERBOSE=1 make <target>` - Show commands for debugging
 
 ### Flutter App Structure
@@ -111,6 +115,22 @@ Copy from `templates/electron-modules/` to your project's `makefiles/` directory
 - `electron-lint FIX=true` ESLint + Prettier with auto-fix pattern
 - `electron-typecheck` TypeScript type checking
 - `VERBOSE=1 make <target>` show commands for debugging
+
+### PostgreSQL + Alembic
+
+Standalone template for database operations. Use alongside `python-fastapi.mk` for a full stack, or independently for any Python project with PostgreSQL.
+
+Copy `templates/postgres.mk` to your project root (or `include` it from your main Makefile).
+
+**Key features:**
+- `db-start` / `db-stop` / `db-clean` Docker Compose lifecycle with health checks
+- `db-init` composite target (start + migrate)
+- `db-reset` safely kills active connections before DROP + recreate
+- `db-migrate` / `db-revision` Alembic migrations via `uv run python -m alembic`
+- `db-migration-current` / `db-migration-history` / `db-migration-check` introspection
+- `db-shell` / `db-pgcli` / `db-pgweb` multiple shell access options
+- `db-logs` / `db-seed` utilities
+- All config via `?=` variables (POSTGRES_CONTAINER, DB_NAME, DB_USER, COMPOSE_FILE)
 
 ## Interaction Pattern
 
@@ -304,6 +324,30 @@ In help output, show usage:
 @printf "$(CYAN)%-25s$(RESET) %s\n" "dev-check" "Run linting (FIX=false: check only)"
 @printf "%-25s $(GREEN)make dev-check FIX=true$(RESET)  <- auto-fix issues\n" ""
 ```
+
+### Per-Module Test Targets
+
+For projects with multiple modules or platform adapters, create per-module test targets using tool-specific filtering:
+
+```makefile
+# Unit tests - filter by test file
+.PHONY: test-unit-auth
+test-unit-auth: ## Run auth module unit tests
+	$(call print_section,Running auth unit tests)
+	$(Q)$(NPM) exec vitest -- run tests/auth.test.js
+
+# E2E tests - filter by grep pattern
+.PHONY: test-e2e-checkout
+test-e2e-checkout: ## Run checkout E2E tests
+	$(call print_section,Running checkout E2E tests)
+	$(Q)$(NPM) exec playwright -- test --grep "checkout"
+```
+
+**Key points:**
+- Use `$(NPM) exec` (not bare `npx`) for consistency with the `$(NPM)` variable
+- Unit tests filter by file path, E2E tests filter by `--grep` pattern
+- Keep the generic `test-unit` and `test-e2e` targets for running everything
+- Put per-module targets in `test.mk`, not `dev.mk`
 
 ## When to Modularize
 

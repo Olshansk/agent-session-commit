@@ -77,7 +77,7 @@ _build-version-prompt:
 		1) NEW=$$V_MAJOR ;; \
 		2) NEW=$$V_MINOR ;; \
 		3) NEW=$$V_PATCH ;; \
-		s|S) printf "$(DIM)Skipping$(RESET)\n"; exit 0 ;; \
+		s|S) printf "$(YELLOW)Skipping$(RESET)\n"; exit 0 ;; \
 		*) printf "$(RED)Invalid$(RESET)\n"; exit 1 ;; \
 	esac; \
 	sed "s/\"version\": \"$$CURRENT\"/\"version\": \"$$NEW\"/" manifest.json > manifest.json.tmp && mv manifest.json.tmp manifest.json; \

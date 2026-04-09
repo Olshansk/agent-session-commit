@@ -16,6 +16,7 @@ Detailed patterns and conventions for creating maintainable Makefiles.
 - [Global Error Handling](#global-error-handling)
 - [Improving Existing Makefiles](#improving-existing-makefiles)
 - [Common Refactoring Patterns](#common-refactoring-patterns)
+- [PostgreSQL / Alembic Patterns](#postgresql--alembic-patterns)
 - [Flutter Patterns](#flutter-patterns)
 
 ## Python/uv Patterns
@@ -441,6 +442,64 @@ test: ## Run tests
 	@printf "$(CYAN)Running tests...$(RESET)\n"
 	pytest
 	@printf "$(GREEN)✓ Tests passed$(RESET)\n"
+```
+
+## PostgreSQL / Alembic Patterns
+
+### Kill Connections Before DROP
+
+Always terminate active connections before dropping a database in `db-reset`. Without this, `DROP DATABASE` fails with "database is being accessed by other users":
+
+```makefile
+db-reset: db-start
+	# Kill active connections first — prevents "database is being accessed" errors
+	@docker exec -i $(POSTGRES_CONTAINER) psql -U $(DB_USER) -d postgres \
+		-c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$(DB_NAME)' AND pid <> pg_backend_pid();" || true
+	@docker exec -i $(POSTGRES_CONTAINER) psql -U $(DB_USER) -d postgres \
+		-c "DROP DATABASE IF EXISTS $(DB_NAME);" || true
+	@docker exec -i $(POSTGRES_CONTAINER) psql -U $(DB_USER) -d postgres \
+		-c "CREATE DATABASE $(DB_NAME);"
+	@$(MAKE) db-migrate
+```
+
+### Docker Health Status vs pg_isready
+
+Prefer Docker's built-in health status over `pg_isready` for readiness checks. When your `docker-compose.yml` defines a healthcheck, `{{.State.Health.Status}}` reflects the full check (not just TCP connectivity):
+
+```makefile
+# Good — uses Docker health status (works with compose healthchecks)
+@STATUS=$$(docker inspect --format='{{.State.Health.Status}}' $(POSTGRES_CONTAINER) 2>/dev/null); \
+if [ "$$STATUS" = "healthy" ]; then ...
+
+# Acceptable fallback — when no healthcheck is defined in compose
+@docker exec $(POSTGRES_CONTAINER) pg_isready -U $(DB_USER) >/dev/null 2>&1
+```
+
+### Module Invocation for Alembic
+
+Use `uv run python -m alembic` instead of `uv run alembic`. The module form avoids PATH resolution issues where `uv run` may not find the `alembic` entry point:
+
+```makefile
+# Good — module invocation, always works
+uv run python -m alembic upgrade head
+uv run python -m alembic revision --autogenerate -m "$(MSG)"
+
+# Fragile — depends on entry point being on PATH
+uv run alembic upgrade head
+```
+
+### Optional DB Shell Tools
+
+Offer `db-pgcli` and `db-pgweb` as optional alternatives to `db-shell`. Show install hints on failure rather than auto-installing:
+
+```makefile
+db-pgcli: ## Open pgcli shell (modern psql with autocomplete)
+	@if ! command -v pgcli >/dev/null 2>&1; then \
+		printf "$(RED)$(CROSS) pgcli is not installed$(RESET)\n"; \
+		printf "$(YELLOW)Install: brew install pgcli$(RESET)\n"; \
+		exit 1; \
+	fi
+	@pgcli "$(DB_URL)"
 ```
 
 ## Flutter Patterns

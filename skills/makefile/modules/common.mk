@@ -26,10 +26,11 @@ TIMESTAMP := $(shell date '+%Y-%m-%d %H:%M:%S')
 ROOT_DIR  := $(shell pwd)
 BUILD_DIR := $(ROOT_DIR)/build
 DIST_DIR  := $(ROOT_DIR)/dist
+DOCS_DIR  := $(ROOT_DIR)/docs
 TMP_DIR   := $(ROOT_DIR)/tmp
 
 # Create directories if needed
-$(BUILD_DIR) $(DIST_DIR) $(TMP_DIR):
+$(BUILD_DIR) $(DIST_DIR) $(DOCS_DIR) $(TMP_DIR):
 	$(Q)mkdir -p $@
 
 # ============================================================================
@@ -96,6 +97,25 @@ _check-postgres: ## Check if PostgreSQL container is running
 		printf "$(RED)❌ Error: PostgreSQL container '$$CONTAINER_NAME' is not running$(RESET)\n"; \
 		printf "$(YELLOW)💡 Start it with: make db-start$(RESET)\n"; \
 		exit 1; \
+	fi
+
+# ============================================================================
+# Docker Cleanup
+# ============================================================================
+.PHONY: dev-clean-docker
+dev-clean-docker: ## Prune all Docker containers, images, volumes, and cache
+	@printf "$(BOLD)$(YELLOW)⚠️  WARNING: This will remove ALL Docker containers, images, volumes, and build cache$(RESET)\n"
+	@printf "$(YELLOW)Continue? [y/N] $(RESET)"; read ans; \
+	if [ "$${ans:-N}" = "y" ] || [ "$${ans:-N}" = "Y" ]; then \
+		printf "$(CYAN)Stopping all containers...$(RESET)\n"; \
+		docker stop $$(docker ps -aq) 2>/dev/null || true; \
+		printf "$(CYAN)Removing all containers...$(RESET)\n"; \
+		docker rm $$(docker ps -aq) 2>/dev/null || true; \
+		printf "$(CYAN)Pruning Docker system (images, volumes, cache)...$(RESET)\n"; \
+		docker system prune -a --volumes -f; \
+		printf "$(GREEN)✓ Docker cleanup complete$(RESET)\n"; \
+	else \
+		printf "$(YELLOW)Cancelled$(RESET)\n"; \
 	fi
 
 # ============================================================================
