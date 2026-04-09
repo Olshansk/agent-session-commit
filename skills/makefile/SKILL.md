@@ -11,11 +11,12 @@ Create Makefiles that are simple, discoverable, and maintainable.
 ## Core Principles
 
 1. **Default to rich help** - Use categorized help with emoji headers unless user requests minimal
-2. **Ask about structure upfront** - For new Makefiles, ask: "Flat or modular? Rich help or minimal?"
-3. **Follow existing conventions** - Match the project's style if Makefile already exists
-4. **Don't over-engineer** - Solve the immediate need, not hypothetical futures
-5. **Use `uv run`** - Always run Python commands via `uv run` for venv context
-6. **Explain decisions** - If choosing flat/minimal, explain why before generating
+2. **Default Chrome extensions to modular** - Use the modular `makefiles/*.mk` layout with shared colors/help for Chrome extension projects unless the repo is truly tiny
+3. **Ask about structure upfront** - For new Makefiles, ask: "Flat or modular? Rich help or minimal?"
+4. **Follow existing conventions** - Match the project's style if Makefile already exists
+5. **Don't over-engineer** - Solve the immediate need, not hypothetical futures
+6. **Use `uv run`** - Always run Python commands via `uv run` for venv context
+7. **Explain decisions** - If choosing flat/minimal, explain why before generating
 
 ## When to Use This Skill
 
@@ -59,6 +60,12 @@ makefiles/
 Copy from `templates/chrome-extension-modules/` to your project's `makefiles/` directory.
 
 **Key features:**
+- Use `makefiles/colors.mk` for ANSI color output and header helpers.
+- Use `makefiles/common.mk` for shell flags, guard rails, and shared variables.
+- Use `makefiles/env.mk` for environment checks and dependency sanity.
+- Use `makefiles/build.mk` for build/package/release targets.
+- Use `makefiles/dev.mk` for install, watch, clean, and other local workflows.
+- Use `makefiles/test.mk` for typecheck, unit, and E2E targets when present.
 - `build-release` - Version bump menu (major/minor/patch) + zip for Chrome Web Store
 - `build-beta` - (Optional) GitHub releases with `gh` CLI
 - `test-unit` / `test-e2e` - Vitest + Playwright testing
@@ -136,7 +143,7 @@ Copy `templates/postgres.mk` to your project root (or `include` it from your mai
 
 1. **Understand** - What specific problem are we solving?
 2. **Check existing** - Is there already a Makefile? Read it first!
-3. **Default to modular** - For 5+ targets, use modular structure unless user requests flat
+3. **Default to modular** - For Chrome extensions and for 5+ targets, use modular structure unless user requests flat
 4. **Match preferences** - Use python-fastapi.mk template style as default for rich help
 5. **Explain structure** - If you choose flat/minimal, explain the reasoning
 6. **Iterate** - Add complexity or simplify based on feedback
