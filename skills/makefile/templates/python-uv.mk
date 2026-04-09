@@ -3,7 +3,7 @@
 #
 # Prerequisites:
 #   - uv installed (https://github.com/astral-sh/uv)
-#   - pyproject.toml (preferred) or requirements.txt
+#   - pyproject.toml + uv.lock
 
 .DEFAULT_GOAL := help
 

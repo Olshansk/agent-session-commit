@@ -226,6 +226,9 @@ dev-format:
 
 ### Use `uv sync` (not pip install)
 
+For Python projects, treat `pyproject.toml` and `uv.lock` as the source of truth.
+Do not add `pip install` or `requirements.txt` fallback guidance to uv-based templates.
+
 ```makefile
 env-install:
 	uv sync  # Uses pyproject.toml + lock file
