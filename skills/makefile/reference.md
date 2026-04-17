@@ -128,6 +128,32 @@ remove-bg: _check-rembg ## Remove background from image
 
 ## Env File Loading
 
+### Why inline-source beats `-include`
+
+Two common patterns for getting `.env` values into a recipe:
+
+| Pattern | Overrides stale shell var? | When to use |
+|---|---|---|
+| `@set -a && . ./.env && set +a && $(CMD)` (inline, per recipe) | **Yes** — the `.env` value wins | Anything that depends on a specific `.env` value (DATABASE_URL, API keys). Safe default. |
+| `-include .env` + `.EXPORT_ALL_VARIABLES:` (top of Makefile) | **No** — shell export wins | Values that aren't commonly set in users' shells (project-specific flags). Cleaner recipes but weaker guarantee. |
+
+**The shell-override footgun:** If a user ever ran `export DATABASE_URL=sqlite:///./old.db` in their shell (or left it in `~/.zshrc`), `-include .env` silently loses — their shell var wins, `.env` is ignored, and Alembic/uvicorn hits the wrong DB with no warning. Inline sourcing reassigns the variable inside the recipe's subshell after make has already inherited the environment, which is what you want.
+
+```makefile
+# Good — inline source: .env wins regardless of shell state
+db-upgrade:
+	@set -a && . ./.env && set +a && uv run python -m alembic upgrade head
+
+# Fragile — loses to an exported shell DATABASE_URL
+# (only at Makefile top)
+-include .env
+.EXPORT_ALL_VARIABLES:
+db-upgrade:
+	uv run python -m alembic upgrade head
+```
+
+### Multiple env files
+
 Support multiple environment files:
 
 ```makefile
@@ -487,6 +513,77 @@ uv run python -m alembic revision --autogenerate -m "$(MSG)"
 # Fragile — depends on entry point being on PATH
 uv run alembic upgrade head
 ```
+
+### psycopg3 + SQLAlchemy Dialect Marker
+
+Modern Python Postgres stacks use **psycopg3** (`psycopg[binary]>=3`), not psycopg2. SQLAlchemy needs the dialect marker `postgresql+psycopg://` to pick psycopg3 over psycopg2:
+
+```toml
+# pyproject.toml
+dependencies = [
+    "alembic>=1.13,<2.0",
+    "psycopg[binary]>=3.1,<4.0",  # psycopg3, not psycopg2-binary
+    "sqlalchemy>=2.0,<3.0",
+]
+```
+
+```bash
+# .env — SQLAlchemy-compatible URL
+DATABASE_URL=postgresql+psycopg://user:pass@localhost:5432/app_dev
+```
+
+### Render Postgres URL Normalization
+
+Render's managed Postgres `fromDatabase.connectionString` returns `postgresql://…` (no dialect marker). The app must normalize this to `postgresql+psycopg://…` before passing to SQLAlchemy. Do it once in a pydantic-settings validator:
+
+```python
+# app/core/config.py
+from pydantic import field_validator
+from pydantic_settings import BaseSettings
+
+def _normalize_database_url(url: str) -> str:
+    if url.startswith("postgres://"):
+        return "postgresql+psycopg://" + url[len("postgres://"):]
+    if url.startswith("postgresql://"):
+        return "postgresql+psycopg://" + url[len("postgresql://"):]
+    return url
+
+class Settings(BaseSettings):
+    database_url: str
+
+    @field_validator("database_url", mode="after")
+    @classmethod
+    def normalize(cls, v: str) -> str:
+        return _normalize_database_url(v)
+```
+
+This lets operators paste any form of the URL into `.env`, `.env.prod`, or Render's env-var UI without worrying about the dialect prefix.
+
+### Docker Run as a Compose Alternative
+
+For single-service DB setups (one Postgres, no peer services), a plain `docker run` in `db-start` is lighter than a `docker-compose.yml`. It avoids the extra file and reads cleaner when the only service is the DB:
+
+```makefile
+PG_CONTAINER := app_postgres_dev
+PG_VOLUME := app_postgres_data
+
+db-start: _check-docker ## Start local Postgres
+	@if docker ps --filter "name=^$(PG_CONTAINER)$$" --filter "status=running" --format "{{.Names}}" | grep -q "$(PG_CONTAINER)"; then \
+		printf "$(YELLOW)$(INFO) already running$(RESET)\n"; \
+	elif docker ps -a --filter "name=^$(PG_CONTAINER)$$" --format "{{.Names}}" | grep -q "$(PG_CONTAINER)"; then \
+		docker start $(PG_CONTAINER) >/dev/null; \
+	else \
+		docker run -d --name $(PG_CONTAINER) \
+			-e POSTGRES_USER=$(DB_USER) -e POSTGRES_PASSWORD=$(DB_USER) -e POSTGRES_DB=$(DB_NAME) \
+			-p 5432:5432 -v $(PG_VOLUME):/var/lib/postgresql/data \
+			--health-cmd "pg_isready -U $(DB_USER) -d $(DB_NAME)" \
+			--health-interval 10s --health-timeout 5s --health-retries 5 \
+			--restart unless-stopped postgres:16-alpine >/dev/null; \
+	fi
+	# ...health-wait loop unchanged...
+```
+
+Teardown verb changes: `docker compose down -v` → `docker rm -f` + `docker volume rm` (in `db-clean`). Switch back to compose the moment you add a second service (Redis, pgbouncer, etc.).
 
 ### Optional DB Shell Tools
 

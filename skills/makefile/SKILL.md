@@ -130,14 +130,15 @@ Standalone template for database operations. Use alongside `python-fastapi.mk` f
 Copy `templates/postgres.mk` to your project root (or `include` it from your main Makefile).
 
 **Key features:**
-- `db-start` / `db-stop` / `db-clean` Docker Compose lifecycle with health checks
+- `db-start` / `db-stop` / `db-clean` Docker Compose lifecycle with health checks (swap to plain `docker run` for single-service setups — see reference.md)
 - `db-init` composite target (start + migrate)
 - `db-reset` safely kills active connections before DROP + recreate
-- `db-migrate` / `db-revision` Alembic migrations via `uv run python -m alembic`
+- `db-migrate` / `db-revision` Alembic migrations via `uv run python -m alembic`; **all Alembic recipes inline-source `.env`** so a stale shell `DATABASE_URL` can't override the configured value
 - `db-migration-current` / `db-migration-history` / `db-migration-check` introspection
 - `db-shell` / `db-pgcli` / `db-pgweb` multiple shell access options
 - `db-logs` / `db-seed` utilities
 - All config via `?=` variables (POSTGRES_CONTAINER, DB_NAME, DB_USER, COMPOSE_FILE)
+- **Driver**: template targets `psycopg[binary]>=3` (psycopg3). SQLAlchemy needs the `postgresql+psycopg://` dialect marker; add a pydantic-settings validator that normalizes `postgres://` / `postgresql://` → `postgresql+psycopg://` so Render's managed DB URL works verbatim.
 
 ## Interaction Pattern
 
@@ -292,7 +293,26 @@ remove-bg: _check-rembg ## Remove background from image
 
 ### Env File Loading
 
-Load `.env` and export to child processes:
+**Primary recommendation: inline-source per recipe.** This is the only pattern that *overrides* stale shell-exported vars, which is the pitfall you'll actually hit in practice.
+
+```makefile
+# Inline-source: recipe's DATABASE_URL comes from .env, not the user's shell
+db-upgrade:
+	@set -a && . ./.env && set +a && uv run python -m alembic upgrade head
+
+run-api-local:
+	@set -a && . ./.env && set +a && uv run uvicorn app.main:app --reload
+```
+
+Per-target override (e.g., test env, prod env):
+
+```makefile
+# Allow: E2E_ENV=.test.env make test-e2e
+test-e2e:
+	@set -a && . "$${E2E_ENV:-.env}" && set +a && uv run pytest tests/e2e/
+```
+
+**Secondary (simpler but weaker): top-of-Makefile load.** Fine for projects where no one exports the same vars in their shell. Does **not** override an already-exported shell var — so don't use this for DB URLs or anything that commonly lives in shell profiles.
 
 ```makefile
 # At top of Makefile, after .DEFAULT_GOAL
@@ -300,13 +320,35 @@ Load `.env` and export to child processes:
 .EXPORT_ALL_VARIABLES:
 ```
 
-For per-target env override:
+> ⚠️ **Shell-override footgun.** If a user has `export DATABASE_URL=...` in their `.zshrc` (or manually in the current shell), the `-include` form silently loses: their shell env wins over `.env`. Alembic/uvicorn will hit the wrong DB with zero warning. Use the inline-source pattern for any recipe that depends on a specific `.env` value.
+
+### Local vs Prod DB Runs
+
+Apps often need to run the same server against two DBs: local Docker for development, remote prod for debugging/one-off migrations. Split into two explicit targets; never let one be the ambient default.
 
 ```makefile
-# Allow: E2E_ENV=.test.env make test-e2e
-test-e2e:
-	@set -a && . "$${E2E_ENV:-.env}" && set +a && uv run pytest tests/e2e/
+.PHONY: run-api-local run-api-prod
+
+run-api-local: ## Run API against local DB (loads .env, --reload)
+	@set -a && . ./.env && set +a && uv run uvicorn app.main:app --reload
+
+run-api-prod: ## Run API against REMOTE prod DB (loads .env.prod)
+	@if [ ! -f .env.prod ]; then \
+		printf "$(RED)$(CROSS) .env.prod not found$(RESET)\n"; \
+		printf "$(YELLOW)Create it locally with the prod DATABASE_URL (gitignored)$(RESET)\n"; \
+		exit 1; \
+	fi
+	@printf "$(RED)$(BOLD)$(WARN)  LOCAL APP -> REMOTE PRODUCTION DB$(RESET)\n"
+	@printf "$(YELLOW)Writes hit prod. Ctrl-C within 3s to abort.$(RESET)\n"
+	@sleep 3
+	@set -a && . ./.env.prod && set +a && uv run uvicorn app.main:app
 ```
+
+**Rules:**
+- `.env.prod` **MUST be gitignored** (production credentials). Add it to `.gitignore` before creating the file.
+- Prod target: **no `--reload`** (code changes auto-reloading against prod is a footgun), visible red warning, 3-second sleep so it isn't silent when fired by reflex.
+- Preflight: fail fast if `.env.prod` is missing rather than silently falling back to `.env`.
+- Same pattern works for `run-worker-local`/`run-worker-prod`, `db-shell-prod` (connect local psql to remote), etc.
 
 ### FIX Variable for Check/Format Targets
 
@@ -455,6 +497,8 @@ help-unclassified: ## Show targets not in categorized help
 		printf "  (none)\n"
 ```
 
+> 💡 Prefer **prefix-based exclusions** (`^(env-|dev-|db-|help|_|\.)`) over enumerating every single target name. A prefix regex stays correct as you add/rename targets; an enumerated list silently falls out of sync and becomes a maintenance burden.
+
 **Description format - one line with example:**
 ```makefile
 # Good - concise description + example on next line
@@ -511,7 +555,10 @@ help-unclassified: ## Show targets not in categorized help
 | Color codes inside `%s` | ANSI codes in `%s` args print as literals - put colors in format string |
 | Target named after tool | Name after the action: `remove-bg` not `rembg` |
 | `help-unclassified` shows filename | Use `sed 's/^[^:]*://'` to strip `Makefile:` prefix |
-| No `.env` export | Add `-include .env` and `.EXPORT_ALL_VARIABLES:` at top |
+| No `.env` export | Inline-source in the recipe: `@set -a && . ./.env && set +a && $(CMD)` (or `-include .env` for weaker cases — see Env File Loading) |
+| Stale shell `DATABASE_URL` silently overrides `.env` | Use inline `set -a && . ./.env && set +a` in any recipe that depends on a specific `.env` value. `-include` alone loses to already-exported shell vars. |
+| Secret committed to git | Add gitignored file (e.g. `.env.prod`), verify with `git check-ignore`, grep staged diff for a secret fragment before `git add`: `git diff --cached \| grep -c "$FRAGMENT"` |
+| Single-service `docker-compose.yml` | For one Postgres container, a plain `docker run` in `db-start` is lighter than a compose file. Compose pays off only when you have 2+ services. |
 
 ## Cleanup Makefile Workflow
 

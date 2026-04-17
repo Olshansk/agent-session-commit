@@ -7,7 +7,13 @@
 # Prerequisites:
 #   - uv installed (https://github.com/astral-sh/uv)
 #   - Docker (for PostgreSQL)
-#   - pyproject.toml with alembic, psycopg2-binary (or asyncpg)
+#   - pyproject.toml with alembic and psycopg[binary]>=3 (psycopg3, not psycopg2)
+#
+# SQLAlchemy dialect note:
+#   SQLAlchemy needs the "postgresql+psycopg://" marker to pick psycopg3.
+#   Render's fromDatabase.connectionString returns "postgresql://..." without
+#   the marker — normalize it in a pydantic-settings validator (see
+#   reference.md -> "Render Postgres URL Normalization").
 
 # ============================================================================
 # Configuration (adjust these for your project)
@@ -15,7 +21,13 @@
 POSTGRES_CONTAINER ?= postgres_dev
 DB_NAME ?= app_dev
 DB_USER ?= postgres
+# Raw Postgres URL for psql / pgcli / pgweb (no dialect marker).
 DB_URL ?= postgresql://$(DB_USER):$(DB_USER)@localhost:5432/$(DB_NAME)
+
+# SQLAlchemy URL for Alembic and the app runtime (psycopg3 dialect).
+# If your app normalizes the URL (recommended), the raw DB_URL in .env is fine
+# and this variable is informational only.
+SQLALCHEMY_URL ?= postgresql+psycopg://$(DB_USER):$(DB_USER)@localhost:5432/$(DB_NAME)
 
 # Docker Compose (supports both old and new syntax)
 DOCKER_COMPOSE ?= $(shell command -v docker-compose 2>/dev/null || echo "docker compose")
@@ -146,25 +158,29 @@ db-reset: db-start ## Reset database (kill connections + drop + recreate + migra
 # ============================================================================
 .PHONY: db-migrate db-revision db-migration-current db-migration-history db-migration-check
 
+# All Alembic targets inline-source .env so a stale shell DATABASE_URL
+# cannot override the local value (see SKILL.md -> "Env File Loading").
+ENV_LOAD := if [ -f .env ]; then set -a && . ./.env && set +a; fi
+
 db-migrate: _check-postgres ## Run database migrations
 	$(call print_info,Running migrations)
-	@uv run python -m alembic upgrade head
+	@$(ENV_LOAD); uv run python -m alembic upgrade head
 	$(call print_success,Migrations complete)
 
 db-revision: ## Create new migration (usage: make db-revision MSG="description")
-	@uv run python -m alembic revision --autogenerate -m "$(MSG)"
+	@$(ENV_LOAD); uv run python -m alembic revision --autogenerate -m "$(MSG)"
 
 db-migration-current: ## Show current migration version
 	$(call print_info,Current migration)
-	@uv run python -m alembic current --verbose
+	@$(ENV_LOAD); uv run python -m alembic current --verbose
 
 db-migration-history: ## Show migration history
 	$(call print_info,Migration history)
-	@uv run python -m alembic history --verbose
+	@$(ENV_LOAD); uv run python -m alembic history --verbose
 
 db-migration-check: ## Check if database is in sync with models (detects schema drift)
 	$(call print_info,Checking for schema drift)
-	@uv run python -m alembic check 2>&1 | grep -q "Target database is not up to date" && \
+	@$(ENV_LOAD); uv run python -m alembic check 2>&1 | grep -q "Target database is not up to date" && \
 		(echo "❌ Database has pending migrations"; \
 		 echo "   Run 'make db-migrate' to apply them"; \
 		 exit 1) || \
