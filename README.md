@@ -63,11 +63,12 @@ Skills I use daily but might rename or delete in the future. I prefix them with 
 | [`cmd-gh-issue`](skills/cmd-gh-issue/SKILL.md)                                 | Create structured GitHub issues from conversation context using `gh` CLI                      |
 | [`cmd-idiot-proof-docs`](skills/cmd-idiot-proof-docs/SKILL.md)                 | Simplify documentation for clarity and scannability with approval-gated edits                 |
 | [`cmd-local-repo-skills`](skills/cmd-local-repo-skills/SKILL.md)               | Scaffold cross-tool repo-local skills with canonical source in `.agents/skills/` and symlinks |
+| [`cmd-olshanskify`](skills/cmd-olshanskify/SKILL.md)                           | Apply Olshansky's personal style to docs, code, blog posts, or presentations via templates    |
 | [`cmd-persona`](skills/cmd-persona/SKILL.md)                                   | Prime the agent with a behavioral persona for the conversation                                |
 | [`cmd-pr-build-context`](skills/cmd-pr-build-context/SKILL.md)                 | Build high-signal PR context with diff analysis, risk assessment, and discussion questions    |
 | [`cmd-pr-conflict-resolver`](skills/cmd-pr-conflict-resolver/SKILL.md)         | Resolve merge conflicts with context-aware 3-tier classification and escalation               |
 | [`cmd-pr-description`](skills/cmd-pr-description/SKILL.md)                     | Generate concise PR descriptions by analyzing the diff against a base branch                  |
-| [`cmd-pr-gh-comments`](skills/cmd-pr-gh-comments/SKILL.md)                     | Triage and resolve GitHub PR review comments with categorized action plans                    |
+| [`cmd-pr-gh-comments`](skills/cmd-pr-gh-comments/SKILL.md)                     | Holistically triage PR comments with line-range context, adjacent sweeps, approval-gated resolution, and cmd-olshanskify updates for @olshansk feedback |
 | [`cmd-pr-review-prepare`](skills/cmd-pr-review-prepare/SKILL.md)               | Prepare branch for code review by building context and identifying issues                     |
 | [`cmd-pr-edgecase`](skills/cmd-pr-edgecase/SKILL.md)                           | Review branch changes for test gaps, logic edge cases, and failure modes                      |
 | [`cmd-pr-test-plan`](skills/cmd-pr-test-plan/SKILL.md)                         | Generate manual test plans with verified commands and pass/fail criteria                      |

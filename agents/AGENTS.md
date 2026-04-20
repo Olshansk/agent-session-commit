@@ -217,6 +217,8 @@ Each skill directory contains a `SKILL.md` with YAML frontmatter. Most `cmd-*` s
 - `cmd-pr-build-context` - Build high-signal PR context for review
 - `cmd-pr-review-prepare` - Prepare branch for code review
 - `cmd-pr-conflict-resolver` - Resolve merge conflicts with 3-tier classification
+- `cmd-pr-gh-comments` - Holistically triage PR comments: line-range context, adjacent-improvement sweeps, approval-gated resolution, optional AGENTS.md refinement, proposes cmd-olshanskify template updates when comments come from @olshansk
+- `cmd-olshanskify` - Apply Olshansky's personal style to docs, code, blog posts, or presentations via templates in `templates/`
 - `cmd-productionize` - Transform apps into production-ready deployments
 - `cmd-sculpt-code` - Reshape code quality: naming, structure, TODOs, surface area
 - `cmd-pr-edgecase` - Review PR for test gaps, logic edge cases, failure modes
