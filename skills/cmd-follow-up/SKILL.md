@@ -48,11 +48,23 @@ Post-implementation reflection pass. Run after completing a task to catch loose 
 - Can complex conditionals be simplified or inverted for early returns?
 - Is there defensive code for impossible states? (internal callers you control, framework guarantees)
 
+### 5. Web Frontend (Client, React, etc...)
+
+- Check whether async data paths can leave the UI stale after the initial render; if so, add a rerender hook or generation guard.
+- Split large renderers and event handlers when they mix loading, state updates, and HTML assembly.
+- Centralize shared copy, labels, thresholds, and status text in helpers or constants instead of repeating inline strings.
+- Prefer named helper functions for repeated UI fragments, metric formatting, and theme-specific overrides.
+- Keep light/dark variants in sync, and verify empty states, filters, and responsive states after edits.
+
 ## Output
 
 For each question where you find something actionable:
 - Show the finding with `file_path:line_number`
 - Apply the fix directly
 - One-line explanation of what changed and why
+
+When there are multiple independent action items, prefer a markdown table to present them with columns like `Severity`, `Source`, `Finding`, and `Fix`.
+Only use a table when it makes the review easier to scan for the user.
+Do not force a table for single findings or tightly coupled issues where plain bullets are clearer.
 
 If nothing actionable is found, say: "Clean — nothing to follow up on."

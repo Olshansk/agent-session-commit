@@ -33,6 +33,7 @@ SEARCH_QUERIES = [
     "st", "le", "ng", "io", "us", "ab", "op", "gu", "hy", "ux",
     "ex", "ph", "qu", "zy", "mu", "py", "go", "ja", "sw", "wo",
 ]
+QUERY_PAUSE_SECONDS = 0.2
 
 
 def _fetch_query(query: str, limit: int = 100_000, retries: int = 3) -> list[dict]:
@@ -44,6 +45,23 @@ def _fetch_query(query: str, limit: int = 100_000, retries: int = 3) -> list[dic
             with urllib.request.urlopen(req, timeout=60) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
             return data.get("skills", [])
+        except urllib.error.HTTPError as e:
+            if e.code != 429:
+                raise
+            retry_after = e.headers.get("Retry-After")
+            if retry_after is not None:
+                try:
+                    wait = max(1, int(retry_after))
+                except ValueError:
+                    wait = 2 ** attempt
+            else:
+                wait = 2 ** attempt
+            if attempt < retries - 1:
+                print(f"    Retry {attempt + 1}/{retries} for q={query} ({e}), waiting {wait}s...")
+                time.sleep(wait)
+            else:
+                print(f"    Skipping q={query} after repeated rate limits ({e}).")
+                return []
         except (urllib.error.URLError, TimeoutError) as e:
             if attempt < retries - 1:
                 wait = 2 ** attempt
@@ -80,7 +98,7 @@ def _fetch_from_api() -> list[dict]:
     """Fetch all skills from skills.sh via the search API."""
     all_skills: dict[str, dict] = {}
     print("Fetching skills from skills.sh API...")
-    for q in SEARCH_QUERIES:
+    for index, q in enumerate(SEARCH_QUERIES):
         batch = _fetch_query(q)
         before = len(all_skills)
         for s in batch:
@@ -88,6 +106,8 @@ def _fetch_from_api() -> list[dict]:
         added = len(all_skills) - before
         if added > 0:
             print(f"  q={q:4s}: +{added:>5,} -> {len(all_skills):>6,} unique skills")
+        if index < len(SEARCH_QUERIES) - 1:
+            time.sleep(QUERY_PAUSE_SECONDS)
     skills = sorted(all_skills.values(), key=lambda s: s["installs"], reverse=True)
     print(f"Total: {len(skills):,} unique skills")
     return skills

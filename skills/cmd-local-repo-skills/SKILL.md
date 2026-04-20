@@ -11,7 +11,7 @@ Create or refactor repo-local skills and agent instructions that work across Cla
 - [Architecture](#architecture)
 - [Phase 1: Gather Context](#phase-1-gather-context)
 - [Phase 2a: Agent Instructions](#phase-2a-agent-instructions)
-- [Phase 2b: Scaffold the Skill](#phase-2b-scaffold-the-skill)
+- [Phase 2b: Scaffold, Promote, or Repair the Skill](#phase-2b-scaffold-promote-or-repair-the-skill)
   - [Create canonical source](#create-canonical-source)
   - [Create symlinks](#create-symlinks)
   - [Update .gitignore](#update-gitignore)
@@ -42,6 +42,7 @@ Key rules:
 - Per-skill symlinks are used instead of directory-level symlinks so externally installed skills (e.g. via `npx skills add`) coexist without conflict
 - `.gitignore` uses a base `skills/` ignore rule, then whitelists specific paths
 - An optional `evals/` directory inside `.agents/skills/<name>/` is always gitignored
+- **No skill may live as a real directory under a tool-specific path** (`.claude/skills/<name>/`, `.codex/skills/<name>/`, `.codex-home/skills/<name>/`). Per-tool dirs contain only symlinks. Canonical source is always `.agents/skills/<name>/` — this keeps skills cross-tool and prevents silent Claude-only (or Codex-only, etc.) drift
 
 ## Phase 1: Gather Context
 
@@ -56,12 +57,19 @@ cat AGENTS.md 2>/dev/null | head -5
 grep -n "^skills/" .gitignore 2>/dev/null
 ```
 
-Present what you found, then use `AskUserQuestion` with these questions (max 4 per call):
+Also run the cross-tool audit (see [Audit commands](#audit-commands) for the copy-paste block). Detect:
 
-1. **Mode**: "Do you want to (a) create a NEW repo-local skill from scratch, (b) refactor an existing `.claude/commands/` file into the cross-tool skill structure, or (c) just set up agent instructions (no skill)?"
-2. **Skill name** (if a or b): "What should the skill be called? (kebab-case, e.g. `grove-api-review`)"
+- **Tool-specific real-dir skills** — any directory under `.claude/skills/`, `.codex/skills/`, or `.codex-home/skills/` that is a real directory (not a symlink). These violate the cross-tool rule and must be promoted.
+- **Orphans in `.agents/skills/`** — any skill in `.agents/skills/` that is missing a symlink in one or more per-tool dirs. These are reachable from some tools but not others.
+
+Present all findings (shared-context reads + audit output), then use `AskUserQuestion` with these questions (max 4 per call):
+
+1. **Mode**: "Do you want to (a) create a NEW repo-local skill from scratch, (b) refactor an existing `.claude/commands/` file into the cross-tool skill structure, (c) just set up agent instructions (no skill), (d) promote an existing tool-specific real-dir skill into the cross-tool layout, or (e) repair an orphan `.agents/skills/` skill by creating missing per-tool symlinks?"
+2. **Skill name** (if a/b/d/e): "What should the skill be called? (kebab-case, e.g. `grove-api-review`)"
 3. **Description** (if a or b): "One-line description of what the skill does."
-4. **If commands exist**: "Which command file should I migrate?" (list the files found in `.claude/commands/`)
+4. **If commands exist and mode = b**: "Which command file should I migrate?" (list the files found in `.claude/commands/`)
+
+If the audit surfaced violations or orphans, lead with those — it's almost always the right next action before scaffolding anything new.
 
 ## Phase 2a: Agent Instructions
 
@@ -108,9 +116,9 @@ grep -n "AGENTS.md\|CLAUDE.md\|GEMINI.md" .gitignore 2>/dev/null
 
 Append the agent instructions block from the [gitignore template](#gitignore-block-template) if not present.
 
-## Phase 2b: Scaffold the Skill
+## Phase 2b: Scaffold, Promote, or Repair the Skill
 
-Skip this phase if the user chose mode (c) in Phase 1.
+Skip this phase if the user chose mode (c) in Phase 1. Modes (a), (b), (d), and (e) all share the same symlink + gitignore steps — they only differ in how the canonical source is produced.
 
 ### Create canonical source
 
@@ -120,16 +128,30 @@ Create the canonical directory:
 mkdir -p .agents/skills/<name>
 ```
 
-**If creating new:**
+**If creating new (mode a):**
 
 Create `.agents/skills/<name>/SKILL.md` with frontmatter and a minimal skeleton. Ask the user to provide or iterate on the skill content.
 
-**If refactoring from `.claude/commands/`:**
+**If refactoring from `.claude/commands/` (mode b):**
 
 1. Read the source command file (e.g., `.claude/commands/<name>.md`)
 2. Create `.agents/skills/<name>/SKILL.md` with YAML frontmatter added
 3. Convert the top-level header to include `<!-- omit in toc -->`
 4. Do NOT delete the original command file yet — offer in Phase 3
+
+**If promoting an existing tool-specific real-dir skill (mode d):**
+
+The skill currently lives as a real directory under a per-tool path (e.g., `.claude/skills/<name>/` with a real `SKILL.md` inside). Move it to the canonical location:
+
+```bash
+mv .claude/skills/<name> .agents/skills/<name>
+```
+
+If the violation is under `.codex/skills/` or `.codex-home/skills/` instead, `mv` from there. Then proceed to [Create symlinks](#create-symlinks) — a symlink must be re-added to the per-tool dir the skill was promoted from (since the `mv` removed it), *and* to the other two per-tool dirs.
+
+**If repairing an orphan (mode e):**
+
+The skill already lives at `.agents/skills/<name>/` but is missing one or more per-tool symlinks. Skip directly to [Create symlinks](#create-symlinks) — the canonical source is untouched; only the symlinks need to be (re-)created.
 
 ### Create symlinks
 
@@ -148,18 +170,44 @@ Check that the symlinks resolve correctly:
 test -f .claude/skills/<name>/SKILL.md && echo "OK" || echo "BROKEN"
 ```
 
-If a repo already uses a directory-level symlink (`.claude/skills → ../.agents/skills`), migrate to per-skill symlinks first:
+Two legacy layouts require normalization before this loop runs cleanly:
+
+**Legacy — directory-level symlink** (`.claude/skills → ../.agents/skills`). Replace with per-skill symlinks:
 
 ```bash
-rm .claude/skills .codex/skills .codex-home/skills
+for tool in .claude .codex .codex-home; do
+  [ -L "$tool/skills" ] && rm "$tool/skills"
+  mkdir -p "$tool/skills"
+done
+```
+
+**Legacy — tool-specific real-dir skill** (a real `.claude/skills/<name>/` or `.codex/skills/<name>/` dir, not a symlink). Promote to canonical first:
+
+```bash
+for tool in .claude .codex .codex-home; do
+  for d in "$tool"/skills/*/; do
+    [ -d "$d" ] && [ ! -L "${d%/}" ] || continue
+    name=$(basename "${d%/}")
+    # Skip if a canonical source already exists (manual conflict resolution needed)
+    [ -d ".agents/skills/$name" ] && { echo "CONFLICT: .agents/skills/$name already exists; resolve manually"; continue; }
+    mv "${d%/}" ".agents/skills/$name"
+  done
+done
+```
+
+After either normalization, populate all three per-tool dirs with per-skill symlinks:
+
+```bash
 mkdir -p .claude/skills .codex/skills .codex-home/skills
 for skill in .agents/skills/*/; do
   name=$(basename "$skill")
-  ln -s "../../.agents/skills/$name" ".claude/skills/$name"
-  ln -s "../../.agents/skills/$name" ".codex/skills/$name"
-  ln -s "../../.agents/skills/$name" ".codex-home/skills/$name"
+  ln -sf "../../.agents/skills/$name" ".claude/skills/$name"
+  ln -sf "../../.agents/skills/$name" ".codex/skills/$name"
+  ln -sf "../../.agents/skills/$name" ".codex-home/skills/$name"
 done
 ```
+
+`ln -sf` makes this idempotent — safe to re-run on a partially-configured repo (mode e).
 
 ### Update .gitignore
 
@@ -204,7 +252,7 @@ readlink .gemini/GEMINI.md
 head -1 CLAUDE.md
 ```
 
-If skills were scaffolded:
+If skills were scaffolded, promoted, or repaired:
 
 ```bash
 # Verify per-skill symlinks resolve correctly
@@ -219,6 +267,18 @@ head -3 .codex-home/skills/<name>/SKILL.md
 
 # Verify git tracks the canonical skill file
 git status .agents/skills/<name>/SKILL.md
+
+# Lint: all three per-tool symlink entries must be whitelisted in .gitignore
+for tool in .claude .codex .codex-home; do
+  grep -q "^!$tool/skills/<name>$" .gitignore \
+    || echo "FAIL: .gitignore missing '!$tool/skills/<name>'"
+done
+
+# Lint: no real-dir skills should remain under any per-tool path
+for tool in .claude .codex .codex-home; do
+  find "$tool/skills" -mindepth 1 -maxdepth 1 -type d -not -name skills \
+    | while read d; do echo "FAIL: real-dir skill at $d (should be a symlink)"; done
+done
 ```
 
 If refactoring, ask: "The original command file at `.claude/commands/<file>` still exists. Should I delete it now that the skill has been migrated?"
@@ -311,6 +371,43 @@ For additional skills, append only the new skill-specific lines:
 !.codex/skills/<name>
 !.codex-home/skills/<name>
 ```
+
+### Audit commands <!-- omit in toc -->
+
+Use these during Phase 1 to surface cross-tool drift before scaffolding anything new.
+
+**Detect tool-specific real-dir skills (violations — a skill that exists under a per-tool path as a real directory, not a symlink):**
+
+```bash
+for tool in .claude .codex .codex-home; do
+  [ -d "$tool/skills" ] || continue
+  find "$tool/skills" -mindepth 1 -maxdepth 1 -type d -not -name skills 2>/dev/null \
+    | while read d; do echo "VIOLATION: real-dir skill at $d"; done
+done
+```
+
+**Detect orphans (skill exists in `.agents/skills/` but is missing a symlink in one or more per-tool dirs):**
+
+```bash
+[ -d .agents/skills ] && for skill in .agents/skills/*/; do
+  name=$(basename "${skill%/}")
+  for tool in .claude .codex .codex-home; do
+    [ -L "$tool/skills/$name" ] || echo "ORPHAN: .agents/skills/$name missing $tool/skills/$name"
+  done
+done
+```
+
+**Detect broken symlinks (target missing):**
+
+```bash
+for tool in .claude .codex .codex-home; do
+  [ -d "$tool/skills" ] || continue
+  find "$tool/skills" -maxdepth 1 -type l -exec test ! -e {} \; -print \
+    | while read l; do echo "BROKEN: $l"; done
+done
+```
+
+Empty output from all three = healthy cross-tool layout.
 
 ### Symlink commands template <!-- omit in toc -->
 

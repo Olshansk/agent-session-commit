@@ -73,3 +73,5 @@ personal/configs/gemini/tmp/
 
 # Snapshots
 **/__snapshots__
+
+__pycache__
