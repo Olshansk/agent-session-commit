@@ -254,6 +254,7 @@ When presenting structured comparisons, use markdown tables with emoji status co
 - Start new sentences on new lines when they stand alone.
 - Never remove any content from the original input.
 - When responding to multiple questions or topics at once, number each item (### 1., ### 2., etc.) so the user can easily reference specific points in follow-ups.
+- In prose (including code comments and docs), put each numbered/lettered list item on its own line. Do not inline them as "either (a) foo, or (b) bar" — break to separate lines to reduce cognitive reading load.
 
 ## Plan Files
 

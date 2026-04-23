@@ -56,6 +56,40 @@ Post-implementation reflection pass. Run after completing a task to catch loose 
 - Prefer named helper functions for repeated UI fragments, metric formatting, and theme-specific overrides.
 - Keep light/dark variants in sync, and verify empty states, filters, and responsive states after edits.
 
+### 6. Comments & prose readable?
+
+Applies to **block code comments, docstrings, and markdown prose ≥ 3 lines** — anywhere a reader hits a paragraph-shaped wall of text. Leave 1–2 line comments alone. Do not add new comments to satisfy this rule; the default is still "no comment." Governs *how* multi-line blocks are written, not *whether* they exist.
+
+- **Open with a one-line summary.** The first line should state the subject in isolation, followed by a blank line.
+- **Label sub-sections with a colon header** (e.g., `Context:`, `Workflow:`, `Why:`, `Caveats:`). One header per logical chunk.
+- **Bullet points over prose.** Bias to bullets under each sub-header. Break run-on sentences across bullets.
+- **Blank lines between sections.** Visual separation matters more than line length.
+- **Readability over line-width.** Don't wrap-pack lines to hit a column limit at the cost of scannability.
+
+**Before:**
+
+    - Earnings SA for `CDPIdentityType` (humans): owner EOA is the user's CDP
+      Embedded Wallet. The signer lives client-side in the user's browser; Grove
+      has NO server-side signer for this EOA. The **client** deploys via
+      `grove-app/src/lib/wallet/ensureEarningsDeployed.ts` by sending a
+      paymaster-sponsored no-op UserOp. Server-side kickoff is a no-op for this
+      identity class — attempting it guarantees a CDP `get_account` 404 because
+      embedded EOAs are not Server-Wallet accounts.
+
+**After:**
+
+    Earnings SA for `CDPIdentityType` (humans).
+
+    Context:
+    - Owner EOA is the user's CDP Embedded Wallet.
+    - The signer lives client-side in the user's browser; Grove has NO server-side signer for this EOA.
+
+    Workflow:
+    - The **client** deploys via `grove-app/src/lib/wallet/ensureEarningsDeployed.ts` by sending a paymaster-sponsored no-op UserOp.
+    - Server-side kickoff is a no-op for this identity class — attempting it guarantees a CDP `get_account` 404 because embedded EOAs are not Server-Wallet accounts.
+
+**Counter-check:** If restructuring would inflate a 3-line comment into 12 lines of scaffolding (headers, blank lines, single-bullet sections), leave it as prose. Structure pays off when there are multiple logical chunks.
+
 ## Output
 
 For each question where you find something actionable:

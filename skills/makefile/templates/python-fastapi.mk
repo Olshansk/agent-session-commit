@@ -7,18 +7,38 @@
 # For modular projects (5+ files), extract colors/helpers into:
 #   makefiles/colors.mk and makefiles/common.mk
 #
+# Companion files (from templates/):
+#   - python-fastapi-env/.template.env -> .template.env (committed)
+#   - python-fastapi-scripts/export_openapi_spec.py -> scripts/export_openapi_spec.py
+#
 # Prerequisites:
 #   - uv installed (https://github.com/astral-sh/uv)
 #   - pyproject.toml with FastAPI, uvicorn
+#   - `.template.env` at repo root; `.env` gitignored
 
 .DEFAULT_GOAL := help
 
 # ============================================================================
 # Configuration (adjust these for your project)
 # ============================================================================
-APP_MODULE := app.main:app
-HOST := 0.0.0.0
-PORT := 8000
+APP_MODULE  ?= app.main:app
+HOST        ?= 0.0.0.0
+PORT        ?= 8000
+# Health path — versioned APIs often live under /v1/health etc.
+HEALTH_PATH ?= /health
+
+# ============================================================================
+# Test granularity
+# ============================================================================
+# This template ships BOTH patterns. Delete the one you don't want when
+# scaffolding:
+#
+#   - Single target `dev-test`: best for small/medium projects. Runs all tests.
+#   - Split `test-unit` / `test-integration` / `test-e2e`: best for larger
+#     projects where unit tests are cheap and e2e hits real infra.
+#
+# If you keep the split pattern, ensure tests/ is laid out as:
+#   tests/unit/  tests/integration/  tests/e2e/
 
 # ============================================================================
 # Colors & Symbols
@@ -57,39 +77,23 @@ define print_section
 endef
 
 # ============================================================================
-# Env File Loading Helper
-# Usage: $(call run_with_env,uv run python script.py)
+# Preflight
 # ============================================================================
-define run_with_env
-	@if [ -n "$$E2E_ENV" ]; then \
-		printf "$(CYAN)$(INFO) Loading environment from: $$E2E_ENV$(RESET)\n"; \
-		if [ ! -f "$$E2E_ENV" ]; then \
-			printf "$(RED)❌ Error: E2E_ENV file not found: $$E2E_ENV$(RESET)\n"; \
-			exit 1; \
-		fi; \
-		set -a && . "$$E2E_ENV" && set +a; \
-		$(1); \
-	else \
-		$(1); \
-	fi
-endef
+.PHONY: _check-env _check-env-prod
 
-# E2E test runner with env file
-define run_e2e_test
-	@( \
-		E2E_ENV_FILE=$${E2E_ENV:-$(1)}; \
-		if [ ! -f "$$E2E_ENV_FILE" ]; then \
-			printf "$(RED)❌ Error: $$E2E_ENV_FILE not found$(RESET)\n\n"; \
-			printf "$(YELLOW)To fix:$(RESET)\n"; \
-			printf "  1. Copy template: $(CYAN)cp .template.env $$E2E_ENV_FILE$(RESET)\n"; \
-			printf "  2. Fill in required values\n\n"; \
-			exit 1; \
-		fi; \
-		export E2E_ENV="$$E2E_ENV_FILE"; \
-		set -a && . "$$E2E_ENV_FILE" && set +a; \
-		$(2) \
-	)
-endef
+_check-env:
+	@if [ ! -f .env ]; then \
+		printf "$(RED)$(CROSS) .env not found$(RESET)\n"; \
+		printf "$(YELLOW)$(INFO) Run 'make env-template' or 'cp .template.env .env'$(RESET)\n"; \
+		exit 1; \
+	fi
+
+_check-env-prod:
+	@if [ ! -f .env.prod ]; then \
+		printf "$(RED)$(CROSS) .env.prod not found$(RESET)\n"; \
+		printf "$(YELLOW)Create it locally with the prod DATABASE_URL (MUST be gitignored)$(RESET)\n"; \
+		exit 1; \
+	fi
 
 # ============================================================================
 # Help (manually organized for better UX)
@@ -99,23 +103,26 @@ help: ## Show all available targets
 	@printf "\n$(BOLD)$(CYAN)📋 FastAPI Project$(RESET)\n\n"
 	@printf "$(BOLD)=== 🚀 Quick Start ===$(RESET)\n"
 	@printf "$(CYAN)%-30s$(RESET) %s\n" "quickstart-dev" "Developer setup guide"
+	@printf "$(CYAN)%-30s$(RESET) %s\n" "env-template" "Create .env from .template.env"
 	@printf "\n"
 	@printf "$(BOLD)=== 🚀 API Operations ===$(RESET)\n"
-	@printf "$(CYAN)%-30s$(RESET) %s\n" "api-run" "Run API server with auto-reload"
-	@printf "$(CYAN)%-30s$(RESET) %s\n" "api-docs" "Open API documentation in browser"
-	@printf "$(CYAN)%-30s$(RESET) %s\n" "api-health" "Check API health endpoint"
+	@printf "$(CYAN)%-30s$(RESET) %s\n" "run-api-local" "Run API against local DB (.env, --reload)"
+	@printf "$(CYAN)%-30s$(RESET) %s\n" "run-api-prod" "Run API against REMOTE prod DB (.env.prod)"
+	@printf "$(CYAN)%-30s$(RESET) %s\n" "api-health" "Check API health endpoint ($(HEALTH_PATH))"
+	@printf "$(CYAN)%-30s$(RESET) %s\n" "api-export-spec" "Export OpenAPI spec to openapi.json"
 	@printf "\n"
 	@printf "$(BOLD)=== 🧪 Testing ===$(RESET)\n"
+	@printf "$(CYAN)%-30s$(RESET) %s\n" "dev-test" "Run all tests"
+	@printf "$(DIM)%-30s$(RESET) (or use the split targets below)\n" ""
 	@printf "$(CYAN)%-30s$(RESET) %s\n" "test-unit" "Run unit tests"
 	@printf "$(CYAN)%-30s$(RESET) %s\n" "test-integration" "Run integration tests (requires db)"
 	@printf "$(CYAN)%-30s$(RESET) %s\n" "test-e2e" "Run E2E tests (uses .env)"
-	@printf "$(DIM)%-30s$(RESET) Usage: $(CYAN)E2E_ENV=.test.env make test-e2e$(RESET)\n" ""
 	@printf "\n"
 	@printf "$(BOLD)=== 🛠️  Development ===$(RESET)\n"
 	@printf "$(CYAN)%-30s$(RESET) %s\n" "dev-format" "Auto-fix and format code (ruff)"
-	@printf "$(CYAN)%-30s$(RESET) %s\n" "dev-check" "Run all checks (format + lint + mypy)"
+	@printf "$(CYAN)%-30s$(RESET) %s\n" "dev-check" "Run lint + tests"
+	@printf "$(CYAN)%-30s$(RESET) %s\n" "validate" "Alias for dev-check"
 	@printf "$(CYAN)%-30s$(RESET) %s\n" "dev-todo" "Find TODO/FIXME/HACK/NOTE comments"
-	@printf "$(CYAN)%-30s$(RESET) %s\n" "dev-clean-docker" "Prune all Docker resources (with confirm)"
 	@printf "\n"
 	@printf "$(BOLD)=== 🐍 Environment ===$(RESET)\n"
 	@printf "$(CYAN)%-30s$(RESET) %s\n" "env-install" "Install development dependencies"
@@ -134,15 +141,29 @@ help: ## Show all available targets
 quickstart-dev: ## Interactive developer setup guide
 	@printf "\n$(BOLD)$(GREEN)🚀 Developer Quick Start$(RESET)\n\n"
 	@printf "$(BOLD)Step 1:$(RESET) Install dependencies\n"
-	@printf "   $(CYAN)make env-install$(RESET)\n\n"
-	@read -p "   Press Enter when ready..." dummy
 	@$(MAKE) env-install
-	@printf "\n$(GREEN)✓ Dependencies installed$(RESET)\n\n"
-	@printf "$(BOLD)Step 2:$(RESET) Start the API server\n"
-	@printf "   $(CYAN)make api-run$(RESET)\n\n"
-	@printf "$(BOLD)$(GREEN)✓ Setup complete!$(RESET)\n"
+	@printf "\n$(BOLD)Step 2:$(RESET) Create .env\n"
+	@$(MAKE) env-template
+	@printf "\n$(BOLD)Step 3:$(RESET) Start the API\n"
+	@printf "   $(CYAN)make run-api-local$(RESET)\n\n"
+	@printf "$(BOLD)$(GREEN)$(CHECK) Setup complete$(RESET)\n"
 	@printf "   API docs: $(CYAN)http://localhost:$(PORT)/docs$(RESET)\n\n"
-	@printf "$(DIM)💡 For database setup, see: make db-start / make db-init$(RESET)\n\n"
+
+# ============================================================================
+# Env bootstrap
+# ============================================================================
+.PHONY: env-template
+
+env-template: ## Create .env from .template.env (safe: never overwrites)
+	@if [ -f .env ]; then \
+		printf "$(YELLOW)$(INFO) .env already exists — leaving it alone$(RESET)\n"; \
+	elif [ ! -f .template.env ]; then \
+		printf "$(RED)$(CROSS) .template.env not found$(RESET)\n"; \
+		exit 1; \
+	else \
+		cp .template.env .env; \
+		printf "$(GREEN)$(CHECK) Created .env from .template.env — fill in real values$(RESET)\n"; \
+	fi
 
 # ============================================================================
 # Environment
@@ -174,44 +195,44 @@ clean-env: ## Remove virtual environment
 # ============================================================================
 # API Server
 # ============================================================================
-.PHONY: api-run api-docs api-health
+.PHONY: run-api-local run-api-prod api-health api-export-spec
 
-api-run: ## Run API server with auto-reload
-	$(call print_section,Starting API server)
-	@printf "\n$(BOLD)$(GREEN)🚀 API Server$(RESET)\n\n"
+run-api-local: _check-env ## Run API against local DB (.env, --reload)
+	$(call print_section,Starting API (local))
 	@printf "$(BOLD)Endpoints:$(RESET) $(CYAN)http://localhost:$(PORT)$(RESET)\n"
-	@printf "$(BOLD)Swagger:$(RESET)   $(CYAN)http://localhost:$(PORT)/docs$(RESET)\n"
-	@printf "$(BOLD)ReDoc:$(RESET)     $(CYAN)http://localhost:$(PORT)/redoc$(RESET)\n\n"
-	@printf "$(YELLOW)$(INFO) Auto-reload enabled$(RESET)\n"
-	@printf "$(DIM)Press Ctrl+C to stop$(RESET)\n\n"
-	uv run uvicorn $(APP_MODULE) --host $(HOST) --port $(PORT) --reload
+	@printf "$(BOLD)Docs:$(RESET)      $(CYAN)http://localhost:$(PORT)/docs$(RESET)\n"
+	@set -a && . ./.env && set +a && uv run uvicorn $(APP_MODULE) --host $(HOST) --port $(PORT) --reload
 
-api-docs: ## Open API documentation in browser
-	$(call print_info,Opening API docs)
-	@if curl -s -f http://localhost:$(PORT)/health > /dev/null 2>&1; then \
-		printf "$(GREEN)✓ Server running, opening browser...$(RESET)\n"; \
-		if command -v open > /dev/null 2>&1; then \
-			open http://localhost:$(PORT)/docs; \
-		elif command -v xdg-open > /dev/null 2>&1; then \
-			xdg-open http://localhost:$(PORT)/docs; \
-		else \
-			printf "$(CYAN)Open: http://localhost:$(PORT)/docs$(RESET)\n"; \
-		fi; \
-	else \
-		printf "$(RED)❌ Server not running$(RESET)\n"; \
-		printf "$(YELLOW)💡 Start with: make api-run$(RESET)\n"; \
-		exit 1; \
-	fi
+run-api-prod: _check-env-prod ## Run API against REMOTE prod DB (.env.prod, no reload)
+	@printf "$(RED)$(BOLD)$(WARN)  LOCAL UVICORN -> REMOTE PRODUCTION DB$(RESET)\n"
+	@printf "$(YELLOW)Writes hit PRODUCTION. Ctrl-C within 3s to abort.$(RESET)\n"
+	@sleep 3
+	$(call print_section,Starting API (prod DB))
+	@printf "$(BOLD)Endpoints:$(RESET) $(CYAN)http://localhost:$(PORT)$(RESET)\n"
+	@set -a && . ./.env.prod && set +a && uv run uvicorn $(APP_MODULE) --host $(HOST) --port $(PORT)
 
-api-health: ## Check API health
-	$(call print_info,Checking API health)
-	@curl -s http://localhost:$(PORT)/health | python3 -m json.tool
+api-health: ## Check API health endpoint (override with HEALTH_PATH=/v1/health)
+	$(call print_info,Checking API health at $(HEALTH_PATH))
+	@curl -s http://localhost:$(PORT)$(HEALTH_PATH)
+	@printf "\n"
+
+api-export-spec: ## Export OpenAPI spec to openapi.json
+	$(call print_section,Exporting OpenAPI spec)
+	uv run python scripts/export_openapi_spec.py
+	$(call print_success,OpenAPI spec written to openapi.json)
 
 # ============================================================================
 # Testing
 # ============================================================================
-.PHONY: test-unit test-integration test-e2e
+.PHONY: dev-test test-unit test-integration test-e2e
 
+# --- Single-target pattern (small/medium projects) --------------------------
+dev-test: ## Run all tests
+	$(call print_section,Running tests)
+	uv run pytest
+	$(call print_success,Tests passed)
+
+# --- Split pattern (larger projects) ---------------------------------------
 test-unit: ## Run unit tests
 	$(call print_section,Running unit tests)
 	uv run pytest tests/unit/ -v
@@ -219,39 +240,36 @@ test-unit: ## Run unit tests
 
 test-integration: ## Run integration tests (requires db)
 	$(call print_section,Running integration tests)
-	@printf "$(YELLOW)$(WARN) Requires PostgreSQL$(RESET)\n"
+	@printf "$(YELLOW)$(WARN) Requires Postgres (make db-start)$(RESET)\n"
 	uv run pytest tests/integration/ -v
 	$(call print_success,Integration tests passed)
 
-test-e2e: ## Run E2E tests (override with E2E_ENV=)
+test-e2e: _check-env ## Run E2E tests (sources .env)
 	$(call print_section,Running E2E tests)
 	@printf "$(YELLOW)$(WARN) This may use real resources$(RESET)\n"
-	@printf "$(CYAN)$(INFO) Using: $${E2E_ENV:-.env}$(RESET)\n"
-	$(call run_e2e_test,.env,uv run pytest tests/e2e/ -v)
+	@set -a && . ./.env && set +a && uv run pytest tests/e2e/ -v
 	$(call print_success,E2E tests passed)
 
 # ============================================================================
 # Development
 # ============================================================================
-.PHONY: dev-format dev-check dev-todo dev-clean-docker
+.PHONY: dev-format dev-check validate dev-todo
 
 dev-format: ## Auto-fix and format code (ruff)
 	$(call print_section,Formatting code)
-	@printf "$(BOLD)Fixing lint issues...$(RESET)\n"
-	uv run ruff check --fix src/ tests/
-	@printf "$(BOLD)Formatting...$(RESET)\n"
-	uv run ruff format src/ tests/
+	uv run ruff check --fix .
+	uv run ruff format .
 	$(call print_success,Formatting complete)
 
-dev-check: ## Run all checks (format + lint + mypy)
+dev-check: ## Run ruff check + pytest
 	$(call print_section,Running checks)
-	@printf "$(BOLD)Linting...$(RESET)\n"
-	uv run ruff check src/ tests/
-	@printf "$(BOLD)Format check...$(RESET)\n"
-	uv run ruff format --check src/ tests/
-	@printf "$(BOLD)Type checking...$(RESET)\n"
-	uv run mypy src/
+	uv run ruff check .
+	uv run ruff format --check .
+	uv run pytest
 	$(call print_success,All checks passed)
+
+validate: dev-check ## Alias for dev-check
+	@:
 
 dev-todo: ## Find TODO/FIXME/HACK/NOTE comments
 	$(call print_section,Searching for TODOs)
@@ -259,21 +277,6 @@ dev-todo: ## Find TODO/FIXME/HACK/NOTE comments
 		--exclude-dir={.venv,__pycache__,.pytest_cache,.mypy_cache,.git} \
 		--exclude={"*.pyc","uv.lock"} \
 		-E "(TODO|FIXME|XXX|HACK|NOTE):" . || printf "$(GREEN)No TODOs found!$(RESET)\n"
-
-dev-clean-docker: ## Prune all Docker containers, images, volumes, and cache
-	@printf "$(BOLD)$(YELLOW)⚠️  WARNING: This will remove ALL Docker containers, images, volumes, and build cache$(RESET)\n"
-	@printf "$(YELLOW)Continue? [y/N] $(RESET)"; read ans; \
-	if [ "$${ans:-N}" = "y" ] || [ "$${ans:-N}" = "Y" ]; then \
-		printf "$(CYAN)Stopping all containers...$(RESET)\n"; \
-		docker stop $$(docker ps -aq) 2>/dev/null || true; \
-		printf "$(CYAN)Removing all containers...$(RESET)\n"; \
-		docker rm $$(docker ps -aq) 2>/dev/null || true; \
-		printf "$(CYAN)Pruning Docker system (images, volumes, cache)...$(RESET)\n"; \
-		docker system prune -a --volumes -f; \
-		printf "$(GREEN)✓ Docker cleanup complete$(RESET)\n"; \
-	else \
-		printf "$(YELLOW)Cancelled$(RESET)\n"; \
-	fi
 
 # ============================================================================
 # Cleaning
@@ -296,13 +299,12 @@ clean-all: clean clean-env ## Clean everything (cache + venv)
 # ============================================================================
 # Error Handling (keep at end)
 # ============================================================================
-# Silently ignore arguments that look like values passed to other targets
 %:
 	@TARGET="$@"; \
 	if echo "$$TARGET" | grep -qE '^(https?://\S+|0x[a-fA-F0-9]{40}|[0-9]+\.?[0-9]*|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(/.*)?|[A-Z]{2,10}|[a-z]+([-][a-z]+)*)$$'; then \
 		: ; \
 	else \
-		printf "\n$(RED)❌ Unknown target '$$TARGET'$(RESET)\n"; \
+		printf "\n$(RED)$(CROSS) Unknown target '$$TARGET'$(RESET)\n"; \
 		printf "   Run $(CYAN)make help$(RESET) to see available targets\n\n"; \
 		exit 1; \
 	fi

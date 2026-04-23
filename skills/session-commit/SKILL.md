@@ -13,29 +13,14 @@ allowed-tools: Read Write Edit Glob Grep Bash LS AskUserQuestion
 
 Analyze the current coding session, propose improvements to `AGENTS.md`, and apply approved changes.
 
-## Available scripts
-
-- `scripts/preflight.sh` - Checks whether required instruction files exist and optionally repairs missing files.
-
 ## Workflow
 
-1. Run preflight checks:
-
-```bash
-bash scripts/preflight.sh
-```
-
-2. If preflight fails and user approves repairs, run:
-
-```bash
-bash scripts/preflight.sh --fix
-```
-
-3. Read the current `AGENTS.md` and build a mental map of existing sections.
-4. Extract only durable learnings from the current session.
-5. Propose changes using the format in `references/change-proposal-format.md`.
-6. Wait for explicit user approval before applying any edits.
-7. Apply approved changes and merge with existing content.
+1. Read the current `AGENTS.md` and build a mental map of existing sections.
+2. If the repo documents a validation or repair command for instruction files, run it before proposing edits.
+3. Extract only durable learnings from the current session.
+4. Propose changes using the format in `references/change-proposal-format.md`.
+5. Wait for explicit user approval before applying any edits.
+6. Apply approved changes and merge with existing content.
 
 ## What to capture
 

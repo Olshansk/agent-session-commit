@@ -590,14 +590,101 @@ Teardown verb changes: `docker compose down -v` → `docker rm -f` + `docker vol
 Offer `db-pgcli` and `db-pgweb` as optional alternatives to `db-shell`. Show install hints on failure rather than auto-installing:
 
 ```makefile
-db-pgcli: ## Open pgcli shell (modern psql with autocomplete)
+db-pgcli: ## Open pgcli shell (strips +psycopg dialect marker)
 	@if ! command -v pgcli >/dev/null 2>&1; then \
 		printf "$(RED)$(CROSS) pgcli is not installed$(RESET)\n"; \
 		printf "$(YELLOW)Install: brew install pgcli$(RESET)\n"; \
 		exit 1; \
 	fi
-	@pgcli "$(DB_URL)"
+	@set -a && . ./.env && set +a && PGCLI_URL=$$(echo "$$DATABASE_URL" | sed 's/+psycopg//') && pgcli "$$PGCLI_URL"
 ```
+
+**Why the `sed`?** pgcli (and `psql`, `pgweb`) don't understand SQLAlchemy's `postgresql+psycopg://...` dialect marker — they expect plain `postgresql://...`. Keeping the SQLAlchemy-flavored URL in `.env` (so your app reads it verbatim) is ergonomic, so the Make recipe normalizes at call time.
+
+## `.env` / `.template.env` Convention
+
+**Ship a committed `.template.env`. Never ship a `.env`.**
+
+- `.template.env` tracks the *schema* of env vars (names + inline comments explaining each). Committed.
+- `.env` holds the actual values. Gitignored.
+- Every new env var that's read in code should land in `.template.env` in the same PR that introduces it.
+- Recipes that source `.env` should preflight with a `_check-env` guard and print a friendly "run `make env-template`" error if missing.
+
+**`env-template` target** (safe — never overwrites):
+
+```makefile
+env-template: ## Create .env from .template.env (safe: never overwrites)
+	@if [ -f .env ]; then \
+		printf "$(YELLOW)$(INFO) .env already exists — leaving it alone$(RESET)\n"; \
+	elif [ ! -f .template.env ]; then \
+		printf "$(RED)$(CROSS) .template.env not found$(RESET)\n"; exit 1; \
+	else \
+		cp .template.env .env; \
+		printf "$(GREEN)$(CHECK) Created .env — fill in real values$(RESET)\n"; \
+	fi
+```
+
+**`_check-env` guard**:
+
+```makefile
+_check-env:
+	@if [ ! -f .env ]; then \
+		printf "$(RED)$(CROSS) .env not found$(RESET)\n"; \
+		printf "$(YELLOW)$(INFO) Run 'make env-template'$(RESET)\n"; \
+		exit 1; \
+	fi
+
+run-api-local: _check-env
+	@set -a && . ./.env && set +a && uv run uvicorn app.main:app --reload
+```
+
+**For prod overrides (`.env.prod`)**: MUST be gitignored (contains production credentials). Verify with `git check-ignore .env.prod` before ever running `git add`. Preflight on it the same way as `.env`.
+
+## OpenAPI Spec Export (FastAPI)
+
+Generate a committable `openapi.json` from a running FastAPI `app`. Useful for:
+
+- **Spec diff in CI** — catch breaking API changes in PR reviews.
+- **Typed client generation** — `openapi-typescript`, `datamodel-code-generator`, etc.
+- **External consumer pinning** — stable artifact, no live-URL dependency.
+
+**`scripts/export_openapi_spec.py`**:
+
+```python
+from __future__ import annotations
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+
+def export_openapi_spec(output_file: Path) -> None:
+    from app.main import app  # adjust if your app lives elsewhere
+    spec = app.openapi()
+    output_file.write_text(json.dumps(spec, indent=2) + "\n", encoding="utf-8")
+
+
+def main() -> None:
+    output_file = ROOT / "openapi.json"
+    export_openapi_spec(output_file)
+    print(f"Wrote {output_file}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+**Make target**:
+
+```makefile
+api-export-spec: ## Export OpenAPI spec to openapi.json
+	uv run python scripts/export_openapi_spec.py
+```
+
+No `_check-env` needed — the script just imports the app module; it doesn't hit the database. (If your `app.main:app` construction reaches out to a live DB at import time, that's a separate smell worth fixing.)
 
 ## Flutter Patterns
 

@@ -8,6 +8,8 @@ Use when editing source files, proposing refactors, or writing new code in any l
 - **Reach for stdlib and battle-tested OSS** before inventing an abstraction. Don't reinvent the wheel.
 - **Solve the problem in front of you.** Do not design for hypothetical future requirements, and do not "clever-engineer" past what the task needs.
 - **Simplicity > cleverness.** If two approaches work, pick the one a new reader understands faster.
+- **No magic strings or numbers.** Repeated literals (menu choices, cache prefixes, status codes, thresholds) become named module constants. A constant is cheaper than finding every caller later.
+- **One source of truth per classification/lookup table.** If a regex list or enum mapping is used in ≥2 modules, consolidate it in a shared module and import — do not copy-paste.
 
 ## Comments & Docs in Code
 
@@ -15,6 +17,7 @@ Use when editing source files, proposing refactors, or writing new code in any l
 - **Write a comment only when the _why_ is non-obvious** — a hidden invariant, a workaround for a specific bug, a surprise the reader would hit otherwise.
 - **Never describe _what_ the code does** if the code already says it. Never reference the current task/PR/caller in a comment — that belongs in the PR description and rots otherwise.
 - **One short line max** for comments and docstrings. No multi-paragraph preambles.
+- **If a docstring has to be longer than ~3 lines, use bullet points** — not flowing prose. Reviewers scan bullets; they skip paragraphs.
 - **Break comments noisily when they drift** — it is better to delete a wrong comment than to partially update it.
 
 ## TODO Conventions
@@ -57,6 +60,16 @@ Every TODO must carry, at minimum:
 - `uv run python …` / `uv run pytest` / `uv run ruff …` for execution
 - `pyproject.toml` as the manifest, not `requirements.txt`
 
+**Python — structured payloads with named fields:**
+
+- Prefer a frozen `@dataclass` over a `dict[str, Any]` for anything with a known schema. Call sites get autocomplete, mypy catches typos, and the shape is enforced in one place.
+- Expose `.to_api_payload()` / `.render_lines()` style helpers on the dataclass instead of asking callers to walk `.items()`.
+
+**Python — DB session ownership:**
+
+- A function that `commit()`s or `rollback()`s owns its `get_db_context()` internally. Do not accept a `Session` just to roll it back — you'll silently unwind the caller's other writes.
+- Pure reads can still take a `Session` parameter. The split is: reads accept, mutations own.
+
 **Shell / CLI work — modern tools over legacy:**
 
 - `fd` instead of `find`
@@ -70,6 +83,7 @@ Every TODO must carry, at minimum:
 - Re-exporting types "for compatibility" that nothing consumes.
 - `// removed X` comments where the diff already tells the story.
 - Half-finished refactors — ship the complete change or don't start.
+- Backward-compat aliases that exist "just for the tests". If you rename `foo` → `bar`, also migrate every caller in the same edit and delete the alias. A `bar = foo` pinning line is half-finished refactor by another name.
 
 ## Before You Submit the Edit
 
@@ -80,3 +94,4 @@ Check:
 3. Are TODO prefixes specific, with why + blockers where relevant?
 4. Does the diff introduce abstraction the current caller does not need? Collapse it.
 5. Does Python code use `uv`, and shell code use `fd` / `rg`?
+6. If you renamed, removed, or moved a public symbol, did you sweep `AGENTS.md` / `README.md` / nearby docs for stale references? `rg <old_name>` is the one-liner.

@@ -1,6 +1,6 @@
 ---
 name: makefile
-description: "Create or improve Makefiles with minimal complexity. Templates available: base, python-uv, python-fastapi, postgres, nodejs, go, chrome-extension, flutter, electron."
+description: "Create or improve Makefiles with minimal complexity. Templates available: base, python-uv, python-fastapi, postgres, nodejs, go, chrome-extension, flutter, electron, static-site."
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 ---
 
@@ -30,17 +30,24 @@ Create Makefiles that are simple, discoverable, and maintainable.
 
 For new projects, use the appropriate template:
 
-| Project Type | Template | Complexity |
-|-------------|----------|------------|
-| Any project | `templates/base.mk` | Minimal |
-| Python with uv | `templates/python-uv.mk` | Standard |
-| Python FastAPI | `templates/python-fastapi.mk` | Full-featured |
-| PostgreSQL + Alembic | `templates/postgres.mk` | Standard |
-| Node.js | `templates/nodejs.mk` | Standard |
-| Go | `templates/go.mk` | Standard |
-| Chrome Extension | `templates/chrome-extension.mk` | Modular |
-| Flutter App | `templates/flutter.mk` | Modular |
-| Electron App | `templates/electron.mk` | Modular |
+| Project Type | Template | Complexity | Asks upfront |
+|-------------|----------|------------|------|
+| Any project | `templates/base.mk` | Minimal | — |
+| Python with uv | `templates/python-uv.mk` | Standard | — |
+| Python FastAPI | `templates/python-fastapi.mk` | Full-featured | test split? prod target? `HEALTH_PATH`? |
+| PostgreSQL + Alembic | `templates/postgres.mk` | Standard | `PG_PORT` (5433 default)? soft vs HARD reset? |
+| Node.js | `templates/nodejs.mk` | Standard | — |
+| Go | `templates/go.mk` | Standard | — |
+| Chrome Extension | `templates/chrome-extension.mk` | Modular | — |
+| Flutter App | `templates/flutter.mk` | Modular | — |
+| Electron App | `templates/electron.mk` | Modular | — |
+| Static Site (HTML/CSS/JS) | `templates/static-site.mk` | Standard | `DEPLOY_MODE` (rsync/gh-pages/netlify/vercel/none)? |
+
+For templates in the "Asks upfront" column, run the Phase 2 interactive questions in §"Interaction Pattern" before scaffolding. Companion files:
+
+- `templates/python-fastapi-env/.template.env` → project's `.template.env`
+- `templates/python-fastapi-scripts/export_openapi_spec.py` → `scripts/export_openapi_spec.py`
+- `templates/postgres-env/.template.env` → merge into project's `.template.env` (don't ship two)
 
 ### Chrome Extension Structure
 
@@ -123,6 +130,26 @@ Copy from `templates/electron-modules/` to your project's `makefiles/` directory
 - `electron-typecheck` TypeScript type checking
 - `VERBOSE=1 make <target>` show commands for debugging
 
+### Static Site (HTML/CSS/JS)
+
+Plain static sites — landing pages, marketing pages, docs — with no bundler or SSR. Uses `npx --yes` for tooling so contributors don't need a local `package.json` or `node_modules`.
+
+Copy `templates/static-site.mk` to your project root as `Makefile`.
+
+Targets use `site-*` and `dev-*` prefixes (per §"Naming Conventions"). The template is deliberately slim — lint/link-check/image-optimization targets were cut because they're rarely run locally on a marketing page and collapse under the "too many granular `dev-*` quality targets" pitfall. Add them back only if a specific project needs them.
+
+**Key features:**
+- `site-serve` - local HTTP server via `python3 -m http.server` (falls back to `npx serve`). Override with `make site-serve PORT=9000 HOST=0.0.0.0`.
+- `site-open` - open `$(ENTRY)` (default `index.html`) in the default browser (macOS `open` / Linux `xdg-open`).
+- `site-status` - print site dir, entry, detected HTML pages, and tooling availability.
+- `dev-format` - prettier `--write` across HTML/CSS/JS via `npx --yes`. No global install required, no `FIX=true` gate — always writes (formatting check-only is CI's job, not a local ergonomic).
+- `dev-asset-report` - top 20 largest files (finds accidentally-committed hero images, uncompressed GIFs).
+- `dev-build` - copies site into `$(BUILD_DIR)` (default `dist/`) via rsync with sensible excludes, then optionally minifies HTML/CSS/JS via `html-minifier-terser` (silently skipped if unavailable).
+- `dev-deploy` - depends on `dev-build`; dispatches on `DEPLOY_MODE` (`rsync` | `gh-pages` | `netlify` | `vercel` | `none`). Fails fast with install hint if the selected tool is missing.
+- `dev-clean` - removes `$(BUILD_DIR)/`.
+
+**Config knobs (`?=` — override on command line):** `SITE_DIR`, `PORT`, `HOST`, `ENTRY`, `BUILD_DIR`, `DEPLOY_MODE`, `RSYNC_DEST`.
+
 ### PostgreSQL + Alembic
 
 Standalone template for database operations. Use alongside `python-fastapi.mk` for a full stack, or independently for any Python project with PostgreSQL.
@@ -130,24 +157,61 @@ Standalone template for database operations. Use alongside `python-fastapi.mk` f
 Copy `templates/postgres.mk` to your project root (or `include` it from your main Makefile).
 
 **Key features:**
-- `db-start` / `db-stop` / `db-clean` Docker Compose lifecycle with health checks (swap to plain `docker run` for single-service setups — see reference.md)
-- `db-init` composite target (start + migrate)
-- `db-reset` safely kills active connections before DROP + recreate
-- `db-migrate` / `db-revision` Alembic migrations via `uv run python -m alembic`; **all Alembic recipes inline-source `.env`** so a stale shell `DATABASE_URL` can't override the configured value
-- `db-migration-current` / `db-migration-history` / `db-migration-check` introspection
-- `db-shell` / `db-pgcli` / `db-pgweb` multiple shell access options
-- `db-logs` / `db-seed` utilities
-- All config via `?=` variables (POSTGRES_CONTAINER, DB_NAME, DB_USER, COMPOSE_FILE)
+- `db-start` / `db-stop` / `db-clean` via plain `docker run` (default) with health-check wait loop. Docker Compose variant is commented at the bottom of the template for multi-service setups.
+- `db-init` composite target (start + migrate).
+- `db-reset` has two flavors via `HARD` flag:
+  - `HARD=false` (default): kill connections → DROP DATABASE → CREATE → migrate. Fast, preserves container+volume.
+  - `HARD=true`: `docker rm -f` container + `docker volume rm -f` + re-init. Use when container/volume itself is in a broken state.
+- `db-migrate` / `db-revision` Alembic migrations via `uv run alembic`; **all Alembic recipes inline-source `.env`** (via `_check-env` guard) so a stale shell `DATABASE_URL` can't override the configured value.
+- `db-migration-current` / `db-migration-history` / `db-migration-check` introspection.
+- `db-shell` (psql) / `db-pgcli` / `db-pgweb` shell access.
+- `db-pgcli` strips the SQLAlchemy `+psycopg` dialect marker before handing the URL to pgcli (pgcli doesn't understand dialect markers).
+- `env-template` bootstrap target that copies `.template.env` → `.env` without overwriting.
+- `db-logs` / `db-seed` utilities.
+- All config via `?=` variables (`PG_CONTAINER`, `PG_DB`, `PG_USER`, `PG_PASSWORD`, `PG_PORT=5433`, `PG_IMAGE`).
+- **Port 5433 by default** to dodge host Homebrew Postgres on 5432. Override with `make db-start PG_PORT=5432` if your machine is clean.
 - **Driver**: template targets `psycopg[binary]>=3` (psycopg3). SQLAlchemy needs the `postgresql+psycopg://` dialect marker; add a pydantic-settings validator that normalizes `postgres://` / `postgresql://` → `postgresql+psycopg://` so Render's managed DB URL works verbatim.
 
-## Interaction Pattern
+## Interaction Pattern (Phased)
 
-1. **Understand** - What specific problem are we solving?
-2. **Check existing** - Is there already a Makefile? Read it first!
-3. **Default to modular** - For Chrome extensions and for 5+ targets, use modular structure unless user requests flat
-4. **Match preferences** - Use python-fastapi.mk template style as default for rich help
-5. **Explain structure** - If you choose flat/minimal, explain the reasoning
-6. **Iterate** - Add complexity or simplify based on feedback
+Run these phases top-to-bottom on any Makefile scaffolding / refactor request. Do **Phase 2 (Interactive questions) BEFORE writing any file** — the answers drive which template variants to emit.
+
+### Phase 1 — Discovery
+
+1. Is there already a Makefile? Read it first — match its conventions.
+2. What stack / language? (Python+uv, FastAPI+Postgres, Node, Go, …)
+3. What's the deployment target? (Render, Fly, Vercel, self-hosted, …) — affects `run-api-prod`.
+4. How big is the project today, and how big will it reasonably grow? (≥5 targets expected → modular.)
+
+### Phase 2 — Interactive questions (ask in ONE batch via `AskUserQuestion`)
+
+Ask up front rather than iterating. Typical questions:
+
+- **Structure**: flat single file or modular (`makefiles/*.mk`)?
+- **Help style**: rich categorized help with emoji headers, or minimal?
+- **Postgres port** (if Postgres used): `5433` (default, dodges host Homebrew Postgres on 5432) or `5432`?
+- **Test granularity**: single `dev-test` (small/medium projects) or split `test-unit` / `test-integration` / `test-e2e` (larger projects)?
+- **Prod runtime**: need a `run-api-prod` target against a remote DB (Render/Fly/etc.)?
+- **OpenAPI spec export** (FastAPI): always include `api-export-spec` unless user declines — enables client SDK generation and spec-diff in CI.
+
+Skip questions whose answer is already implied by an existing Makefile or strong project signal.
+
+### Phase 3 — Scaffold
+
+Emit (in this order):
+
+1. `Makefile` + `makefiles/*.mk` (if modular).
+2. `.template.env` at repo root (committed).
+3. `.env` is **NOT** created — leave that to `make env-template`. Add `.env` to `.gitignore` if not already there.
+4. `.env.prod` — if `run-api-prod` was requested, confirm `.env.prod` is in `.gitignore` (it MUST be — production credentials).
+5. `scripts/export_openapi_spec.py` (if FastAPI + api-export-spec).
+
+### Phase 4 — Verify
+
+- `make help` — clean categorized output.
+- `make help-unclassified` — should be empty or minimal.
+- `make -n run-api-local db-migrate api-export-spec` — dry-run the critical paths.
+- Grep for any `_check-env` / `_check-postgres` guards you added to confirm they fire when expected.
 
 ## Naming Conventions
 
@@ -156,7 +220,7 @@ Use **kebab-case** with consistent prefix-based grouping:
 ```makefile
 # Good - consistent prefixes (hyphens, not underscores)
 build-release, build-zip, build-clean    # Build tasks
-dev-run, dev-test, dev-lint              # Development tasks
+dev-run, dev-clean                       # Development tasks
 db-start, db-stop, db-migrate            # Database tasks
 env-local, env-prod, env-show            # Environment tasks
 
@@ -164,9 +228,18 @@ env-local, env-prod, env-show            # Environment tasks
 _build-zip-internal, _prompt-version     # Not shown in make help
 
 # Bad - inconsistent
-run-dev, build, localEnv, test_net
+run-dev, localEnv, test_net
 build_release, dev_test                  # Underscores - don't use
 ```
+
+**Exception — universal unprefixed names.** A handful of names are so de-facto standard across ecosystems (npm, cargo, go, make itself) that prefixing them with `dev-` adds noise without adding signal. Keep these unprefixed:
+
+- `test` (not `dev-test`)
+- `build` (not `dev-build`) — **only if** the project has no competing `build-*` group
+- `run` (not `dev-run`) — same caveat
+- `format` / `lint` — same caveat; if you have `dev-format` already, stay consistent within the project
+
+Rule of thumb: if the unprefixed name would collide with a prefix group you already have (e.g., already have `build-release`, `build-zip`), keep the `dev-` prefix for consistency. Otherwise, drop it.
 
 **Name targets after the action, not the tool:**
 ```makefile
@@ -322,6 +395,65 @@ test-e2e:
 
 > ⚠️ **Shell-override footgun.** If a user has `export DATABASE_URL=...` in their `.zshrc` (or manually in the current shell), the `-include` form silently loses: their shell env wins over `.env`. Alembic/uvicorn will hit the wrong DB with zero warning. Use the inline-source pattern for any recipe that depends on a specific `.env` value.
 
+### `.env` / `.template.env` Bootstrap
+
+**Always ship a `.template.env`. Never ship a `.env`.**
+
+- `.template.env` is committed to git. It tracks the *schema* of env vars the project expects — every new env var in code gets a placeholder here in the same PR.
+- `.env` is gitignored. Each developer fills in real values locally.
+- Every recipe that sources `.env` should preflight-check its existence and print a friendly "run `make env-template`" if missing.
+- Ship a `make env-template` target that copies `.template.env` → `.env` but **never overwrites** an existing `.env`.
+
+```makefile
+_check-env:
+	@if [ ! -f .env ]; then \
+		printf "$(RED)$(CROSS) .env not found$(RESET)\n"; \
+		printf "$(YELLOW)$(INFO) Run 'make env-template' or 'cp .template.env .env'$(RESET)\n"; \
+		exit 1; \
+	fi
+
+env-template: ## Create .env from .template.env (safe: never overwrites)
+	@if [ -f .env ]; then \
+		printf "$(YELLOW)$(INFO) .env already exists — leaving it alone$(RESET)\n"; \
+	elif [ ! -f .template.env ]; then \
+		printf "$(RED)$(CROSS) .template.env not found$(RESET)\n"; exit 1; \
+	else \
+		cp .template.env .env; \
+		printf "$(GREEN)$(CHECK) Created .env from .template.env — fill in real values$(RESET)\n"; \
+	fi
+
+run-api-local: _check-env
+	@set -a && . ./.env && set +a && uv run uvicorn app.main:app --reload
+```
+
+**Why not just `-include .env` at the top of the Makefile?** See §"Env File Loading" above — `-include` silently loses to already-exported shell vars. The `.template.env` + `_check-env` + inline-source pattern is robust against that footgun AND gives new contributors a one-command bootstrap.
+
+### OpenAPI Spec Export (FastAPI)
+
+Ship a standard `api-export-spec` target whenever you scaffold a FastAPI project. Benefits:
+
+- Enables spec-diff in CI (catch accidental breaking API changes in PRs).
+- Unblocks typed client generation (`openapi-typescript`, `datamodel-code-generator`, etc.).
+- Gives external consumers a stable URL-less artifact to pin against.
+
+Pair it with `templates/python-fastapi-scripts/export_openapi_spec.py`:
+
+```makefile
+api-export-spec: ## Export OpenAPI spec to openapi.json
+	uv run python scripts/export_openapi_spec.py
+```
+
+```python
+# scripts/export_openapi_spec.py
+from app.main import app
+import json
+from pathlib import Path
+
+(Path(__file__).parents[1] / "openapi.json").write_text(
+    json.dumps(app.openapi(), indent=2) + "\n"
+)
+```
+
 ### Local vs Prod DB Runs
 
 Apps often need to run the same server against two DBs: local Docker for development, remote prod for debugging/one-off migrations. Split into two explicit targets; never let one be the ambient default.
@@ -448,25 +580,70 @@ old-name: new_name ## (Legacy) Description
 - **Never add targets without clear purpose**
 - **No line-specific references** - Avoid patterns like "Makefile:44" in docs/comments; use target names instead
 - **Single source of truth** - Config vars defined once in root Makefile, not duplicated in modules
+- **Root Makefile = help + imports + catch-all only** - Recipe bodies live in `makefiles/*.mk`. When a recipe leaks into the root file, other contributors copy that pattern and the modular structure drifts back to flat. If `setup`/`status`/whatever lives in root, move it to the most relevant module (e.g., `env.mk`).
 - **Help coverage audit** - All targets with `##` must appear in either `make help` or `make help-unclassified`
 
 ## Help System
 
-**ASCII box title for visibility:**
+**ASCII box title with a project-branded emoji on the right.** The box anchors the top of `make help`; the right-side emoji gives the project a glanceable identity (leaf/herb for Grove, rocket for an SDK, lock for a security tool, etc.). Keep the emoji on the right — left-side placement crowds the title text.
+
 ```makefile
 help:
 	@printf "\n"
-	@printf "$(BOLD)$(CYAN)╔═══════════════════════════╗$(RESET)\n"
-	@printf "$(BOLD)$(CYAN)║     Project Name          ║$(RESET)\n"
-	@printf "$(BOLD)$(CYAN)╚═══════════════════════════╝$(RESET)\n\n"
+	@printf "$(BOLD)$(CYAN)╔══════════════════════════════════════════════╗$(RESET)\n"
+	@printf "$(BOLD)$(CYAN)║$(RESET)  $(BOLD)Grove App — Makefile Targets$(RESET)            🌿  $(BOLD)$(CYAN)║$(RESET)\n"
+	@printf "$(BOLD)$(CYAN)╚══════════════════════════════════════════════╝$(RESET)\n\n"
 ```
+
+> ⚠️ **Emoji width gotcha.** Most emojis render as 2 terminal columns but count as 1 char in the printf string — so counting `═` against visible spaces won't match. Eyeball the rendered output and add/remove spaces before the emoji until the right `║` lines up with the corner of the box. Budget an extra pass for this.
 
 **Categorized help with sections:**
 ```makefile
-	@printf "$(BOLD)=== 🏗️  Build ===$(RESET)\n"
+	@printf "$(BOLD)$(BLUE)=== 🏗️  Build ===$(RESET)\n\n"
 	@grep -h -E '^build-[a-zA-Z_-]+:.*?## .*$$' ... | awk ...
-	@printf "$(BOLD)=== 🔧 Development ===$(RESET)\n"
+	@printf "$(BOLD)$(BLUE)=== 🔧 Development ===$(RESET)\n\n"
 	@grep -h -E '^dev-[a-zA-Z_-]+:.*?## .*$$' ... | awk ...
+```
+
+**Section header rules:**
+- **Every section header gets a leading emoji.** Makes blocks scannable at a glance (🚀 Run, 🛠️ Dev, 🧹 Cleanup) and eye-trains the reader so they can skip directly to the section they want without parsing words. Use the emoji vocabulary table below for consistency across projects.
+- **Use a distinct color for section headers** — not the same color as the title or target names. **Default to `$(BOLD)$(BLUE)`** when the title uses `$(BOLD)$(CYAN)` and target names are `$(CYAN)`. Avoid `$(BOLD)$(MAGENTA)` — reads as purple and clashes with most terminal themes. Good alternatives if blue isn't available: `$(BOLD)$(GREEN)` (if green isn't already heavily used for success messages) or `$(BOLD)$(YELLOW)` (conflicts less with "warning" context when help has no warnings). Bold-only with no color renders as plain terminal-default and gets lost on dense help output.
+- **Trailing `\n\n`** — always put a blank line between the section header and the first target. Makes each block visually scannable; no blank line produces a wall of text.
+- **Blank line between sections** — follow each section's last target with `@printf "\n"` before the next header.
+
+**Emoji vocabulary for help sections** (pick from this list; reuse the same emoji for the same concept across projects so the visual language transfers):
+
+| Section concept                          | Emoji | Notes                                           |
+| ---------------------------------------- | ----- | ----------------------------------------------- |
+| Quick Start / Getting started            | 🚀    | Primary entry point for new contributors        |
+| Run / dev server / start service         | 🏃    | Short-running ergonomic entry points            |
+| Build / compile / package                | 🏗️    | `dev-build`, artifact creation                  |
+| Development / lint / format / typecheck  | 🛠️    | Quality gate targets                            |
+| Tests                                    | 🧪    | `test`, `test-e2e`, coverage                    |
+| Database                                 | 🗄️    | `db-start`, `db-migrate`, `db-reset`            |
+| Environment / config                     | 🌐    | `env-setup`, `env-status`, `env-show`           |
+| Secrets / auth / keys                    | 🔑    | `env-pull-*`, credential management             |
+| Deploy / release                         | 🛫    | `deploy`, `release`, `publish`                  |
+| Cleanup / reset                          | 🧹    | `clean-*` family                                |
+| Help / reference                         | ❓    | `help`, `help-unclassified`                     |
+
+Leave padding/alignment intact when substituting emojis — some (🛠️, 🗄️, 🏗️) include a variation selector that consumes an extra column in some terminals; add an extra space after them if alignment drifts.
+
+**Quick Start is a 2-step instruction list, not a target list.** If the real entry point is a short sequence (`make env-setup && make run-prod`), print numbered instructions — do NOT list the same targets under both Quick Start and their "real" section (Environment Utilities, Run, etc.). Duplication doubles the help height and dilutes signal.
+
+```makefile
+# Good - numbered instructions, targets appear only in their real section
+@printf "$(BOLD)$(MAGENTA)=== Quick Start ===$(RESET)\n\n"
+@printf "  1. $(CYAN)make env-setup$(RESET)\n"
+@printf "  2. $(CYAN)make run-mainnet$(RESET)\n\n"
+
+# Bad - same targets repeated under "Quick Start" and "Environment Utilities"
+@printf "$(BOLD)=== Quick Start ===$(RESET)\n"
+@printf "$(CYAN)%-25s$(RESET) %s\n" "setup" "First-time setup"
+@printf "$(CYAN)%-25s$(RESET) %s\n" "status" "Show environment"
+...
+@printf "$(BOLD)=== Environment Utilities ===$(RESET)\n"
+@printf "$(CYAN)%-25s$(RESET) %s\n" "env-setup" "First-time setup"     # duplicate
 ```
 
 **Key help patterns:**
@@ -523,13 +700,33 @@ help-unclassified: ## Show targets not in categorized help
 
 **Coloring inline values in descriptions:**
 
+Two categories of inline value deserve consistent color treatment across every help description:
+
+| Value type | Color | Examples |
+|------------|-------|----------|
+| File paths | `$(YELLOW)` | `.env.local`, `.next`, `node_modules`, `package-lock.json`, `dist/`, `~/.grove` |
+| URLs and host:port | `$(YELLOW)` | `localhost:3000`, `api.grove.city`, `https://…` |
+| Commands and examples | `$(GREEN)` | `make foo BAR=baz`, `npm run dev` |
+
+Pick one color scheme across the whole Makefile and stick to it — a description that says "removes `.next`" in yellow in one line and green in another reads as accidental.
+
 ```makefile
-# Good - color codes in format string, paths/commands highlighted
-@printf "$(CYAN)%-25s$(RESET) Clean + build, install to $(GREEN)~/.grove$(RESET)\n" "install-prod"
-@printf "$(CYAN)%-25s$(RESET) Build binary to $(GREEN)dist/$(RESET)\n" "dev-build"
+# Good - color codes in format string, paths/URLs in YELLOW, commands in GREEN
+@printf "$(CYAN)%-25s$(RESET) Remove $(YELLOW).next$(RESET) build directory\n" "clean-build"
+@printf "$(CYAN)%-25s$(RESET) Testnet API + testnet chains ($(YELLOW)api.testnet.grove.city$(RESET))\n" "run-testnet"
+@printf "$(CYAN)%-25s$(RESET) Clean + build, install to $(YELLOW)~/.grove$(RESET)\n" "install-prod"
+@printf "%-25s $(GREEN)make foo ARG=val$(RESET)\n" ""
 
 # Bad - color codes inside %s are printed as literals
-@printf "$(CYAN)%-25s$(RESET) %s\n" "install-prod" "Install to $(GREEN)~/.grove$(RESET)"
+@printf "$(CYAN)%-25s$(RESET) %s\n" "install-prod" "Install to $(YELLOW)~/.grove$(RESET)"
+```
+
+**URL-in-parens formula for `run-*` targets.** When a run target has a canonical destination (localhost port, API URL), append it in yellow parens at the end of the description. This is denser than a separate info line and matches how contributors actually scan help output.
+
+```makefile
+@printf "$(CYAN)%-25s$(RESET) Local API + testnet chains ($(YELLOW)localhost:8000$(RESET))\n" "run-local"
+@printf "$(CYAN)%-25s$(RESET) Testnet API + testnet chains ($(YELLOW)api.testnet.grove.city$(RESET))\n" "run-testnet"
+@printf "$(CYAN)%-25s$(RESET) Production API + mainnet chains ($(YELLOW)api.grove.city$(RESET))\n" "run-mainnet"
 ```
 
 **Catch-all redirects to help:**
@@ -537,6 +734,157 @@ help-unclassified: ## Show targets not in categorized help
 %:
 	@printf "$(RED)Unknown target '$@'$(RESET)\n"
 	@$(MAKE) help
+```
+
+## Runtime Output for Long-Running Targets
+
+Help output is one concern; *runtime output* from `run-*` / `dev-*` / `db-*` targets that activate config and then hand off to a long-running subprocess (`next dev`, `uvicorn`, `docker compose up`) is a second concern. Without structure, the output from "env activation → warning → config summary → subprocess banner → subprocess logs" interleaves into one undifferentiated wall of ℹ️ / ✓ / ⚠️ lines, and the developer has to read everything to find what matters. The patterns below break that into visually distinct phases.
+
+### Phase Banners
+
+Bracket each logical phase with a horizontal rule + emoji + title + horizontal rule. Add two small reusable macros to `colors.mk`:
+
+```makefile
+# Horizontal rule separator
+define print_hr
+	@printf "$(DIM)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(RESET)\n"
+endef
+
+# Phase banner: horizontal rule + emoji + title + horizontal rule
+# Usage: $(call print_phase,🔑,ENV → LOCAL + MAINNET)
+define print_phase
+	@printf "\n$(DIM)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(RESET)\n"
+	@printf "$(BOLD)$(CYAN) $(1)  $(2)$(RESET)\n"
+	@printf "$(DIM)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(RESET)\n\n"
+endef
+```
+
+**Suggested phase-emoji vocabulary** (use consistently across a project so the reader learns the shorthand):
+
+| Phase | Emoji | Use when |
+|-------|-------|----------|
+| Env / setup / secrets | 🔑 | Activating `.env`, loading secrets, switching config |
+| Config / URLs / network | 🌐 | Showing resolved config, API endpoints, RPC URLs |
+| App / server / service starting | 🚀 | Right before handing off to `next dev` / `uvicorn` / etc. |
+| Database | 🗄️ | `db-start`, `db-migrate`, `db-reset` |
+| Build | 📦 | `build`, `dev-build`, packaging |
+| Tests | 🧪 | Before `pytest` / `vitest` / `playwright` output |
+| Deploy | 🛫 | Before `render deploy` / `fly deploy` / `vercel` |
+
+### Critical-Action Warnings (Triple-Emoji Pattern)
+
+For irreversible actions — real-money mainnet runs, production DB writes, force pushes, anything with "you probably can't undo this" — use a standalone triple-emoji line that sits between phases, not inside one. The triple flanking is visually louder than any single-line warning and the isolation ensures it isn't scanned past as ambient info.
+
+```makefile
+# In colors.mk
+define print_mainnet_warning
+	@printf "\n$(RED)$(BOLD)⚠️⚠️⚠️  MAINNET — REAL MONEY. DOUBLE-CHECK BEFORE TX.  ⚠️⚠️⚠️$(RESET)\n"
+endef
+
+define print_prod_db_warning
+	@printf "\n$(RED)$(BOLD)⚠️⚠️⚠️  WRITES HIT PRODUCTION DATABASE — CTRL-C IN 3s TO ABORT  ⚠️⚠️⚠️$(RESET)\n"
+endef
+```
+
+**Rules:**
+- Reserve the triple-⚠️ pattern for genuinely irreversible / costly actions. If you use it on every soft warning, it loses all signal.
+- Single ⚠️ (or 🟡) for soft warnings ("secrets file missing, OAuth won't work"); triple ⚠️⚠️⚠️ for hard ones ("real money", "prod DB", "about to overwrite remote").
+- Always render in `$(RED)$(BOLD)` and on its own line with blank lines around it — a boxed or inlined version loses punch.
+
+### "Subprocess Logs Below" Divider
+
+Right before handing off to a long-running subprocess (`npm run dev`, `uvicorn`, `docker compose up`), print a muted divider line that names whose logs are about to appear. Tells the user the Makefile's own output has ended, and anything below is coming from a child process with its own formatting conventions.
+
+```makefile
+.PHONY: dev-run
+dev-run:
+	$(call print_phase,🚀,APP)
+	# ... URLs, Ctrl+C hint, etc ...
+	@printf "\n$(DIM)─────────── Next.js logs below ───────────$(RESET)\n\n"
+	$(Q)npm run dev
+```
+
+Name the subprocess explicitly (`Next.js logs`, `uvicorn logs`, `Postgres logs`) — a generic "logs below" is less useful because the reader still has to guess whose formatting conventions to expect.
+
+### Actionable-Control Hint Before Hand-Off
+
+Print one line right before the subprocess divider that tells the user what their keyboard controls are and what to expect. Compact, one line, bold the key combo:
+
+```makefile
+@printf "\n$(CYAN)$(INFO) Auto-reload enabled · Press $(BOLD)Ctrl+C$(RESET)$(CYAN) to stop$(RESET)\n"
+```
+
+Bad alternative: a multi-line "Server running. Press Ctrl+C to stop. Changes auto-reload." block — same information, 3× the vertical space, no denser.
+
+### Parsed Key-Value Grid Over Raw `grep` Dumps
+
+For `env-show` / `status` / `db-info` / any target whose job is to show "the current state of things," parse the underlying file and print a compact key-value grid rather than dumping raw `KEY=value` lines from `grep`. The parsed version is scannable; the raw dump is a wall of `NEXT_PUBLIC_FOO=bar` prefixes that the eye has to filter.
+
+```makefile
+# Bad - raw grep dump, 3 subsections, 8 lines
+env-show:
+	@printf "\n$(BOLD)Configuration:$(RESET)\n"
+	@grep "^NEXT_PUBLIC_ENV=" .env.local | sed 's/^/  /'
+	@grep "^NEXT_PUBLIC_CHAIN_ENV=" .env.local | sed 's/^/  /'
+	@printf "\n$(BOLD)API Endpoints:$(RESET)\n"
+	@grep "NEXT_PUBLIC_.*_URL=" .env.local | sed 's/^/  /'
+	@printf "\n$(BOLD)Services:$(RESET)\n"
+	@grep "^NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=" .env.local | sed 's/^/  /'
+
+# Good - parsed grid under a phase banner, 4 lines, aligned columns
+env-show:
+	$(call print_phase,🌐,CONFIG)
+	@ENV=$$(grep "^NEXT_PUBLIC_ENV=" .env.local | cut -d= -f2); \
+	 GROVE=$$(grep "^NEXT_PUBLIC_GROVE_API_BASE_URL=" .env.local | cut -d= -f2); \
+	 BASE=$$(grep "^NEXT_PUBLIC_BASE_RPC_URL=" .env.local | cut -d= -f2 | sed 's|https://||'); \
+	 SOL=$$(grep "^NEXT_PUBLIC_SOLANA_RPC_URL=" .env.local | cut -d= -f2 | sed 's|https://||'); \
+	 printf "  $(BOLD)%-8s$(RESET) $(YELLOW)%s$(RESET)\n" "Env" "$$ENV"; \
+	 printf "  $(BOLD)%-8s$(RESET) $(YELLOW)%s$(RESET)\n" "API" "$$GROVE"; \
+	 printf "  $(BOLD)%-8s$(RESET) $(YELLOW)%s$(RESET) · $(YELLOW)%s$(RESET)\n" "RPC" "$$BASE" "$$SOL"
+```
+
+**Rules:**
+- Fixed-width label column (`%-8s` / `%-10s`) so values align vertically.
+- Values colored `$(YELLOW)` (same convention as help-description paths/URLs).
+- Strip noise (e.g. `https://` prefixes on RPC URLs) when the protocol doesn't add information.
+- Mask secrets (`WALLETCONNECT_SECRET=***hidden***`).
+- If a value is missing or placeholder, print `$(RED)✗ not configured$(RESET)` — don't silently omit the row.
+
+### Full-Flow Example
+
+Applying all five patterns to a `run-mainnet` target produces:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 🔑  ENV → MAINNET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ✓  envs/mainnet.env + envs/.mainnet.secrets → .env.local
+
+⚠️⚠️⚠️  MAINNET — REAL MONEY. DOUBLE-CHECK BEFORE TX.  ⚠️⚠️⚠️
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 🌐  CONFIG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Env      MAINNET (Base Mainnet · Solana Mainnet)
+  API      https://api.grove.city
+  RPC      mainnet.base.org · api.mainnet-beta.solana.com
+  Wallet   WalletConnect a06ebd2a…
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 🚀  APP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🌐 URLs:
+   http://localhost:3000         (local)
+   http://192.168.1.15:3000      (LAN / mobile — cross-network? make run-ngrok)
+
+ℹ️ Auto-reload enabled · Press Ctrl+C to stop
+
+─────────── Next.js logs below ───────────
+
+▲ Next.js 16.2.1 (Turbopack) · Ready in 400ms
 ```
 
 ## Common Pitfalls
@@ -553,12 +901,24 @@ help-unclassified: ## Show targets not in categorized help
 | Too many public targets | Don't expose `install-X` or `check-X` - use internal `_check-X` dependencies |
 | `$(DIM)` for usage text | Appears grey/unreadable - use `$(GREEN)` instead |
 | Color codes inside `%s` | ANSI codes in `%s` args print as literals - put colors in format string |
+| Section header same color as title/targets | Use a distinct color (default `$(BOLD)$(BLUE)` — avoid `$(MAGENTA)`/purple, clashes with most terminal themes) + `\n\n` after the header. `$(BOLD)` alone renders as terminal-default and gets lost. |
+| Section headers have no emoji | Every section gets a leading emoji (🚀 Quick Start, 🏃 Run, 🛠️ Development, 🌐 Environment, 🧹 Cleanup, 🧪 Tests). Emojis give the reader a glanceable landmark so they can skip to the section they want without parsing words. See "Emoji vocabulary" table in the Help System section. |
+| Title box has no project emoji | The `make help` title box should carry a project-branded emoji on the right (🌿 for Grove, 🚀 for SDKs, 🔒 for security tools, etc.). Right-side placement; left-side crowds the title. |
+| Runtime output is a wall of ℹ️/⚠️/✓ with no structure | Wrap each logical phase (env activation, config summary, subprocess hand-off) in a `print_phase` banner — see §"Runtime Output for Long-Running Targets". |
+| `env-show` / `status` dumps raw `KEY=value` grep output | Parse the values in shell and print a compact aligned key-value grid (`Env` / `API` / `RPC` / `Wallet`) — scannable instead of a wall of `NEXT_PUBLIC_FOO=bar`. |
+| ⚠️ used on every warning, so no warning stands out | Reserve triple-`⚠️⚠️⚠️` `$(RED)$(BOLD)` for irreversible / costly actions (prod writes, real money, force push). Single `⚠️` for soft warnings. |
 | Target named after tool | Name after the action: `remove-bg` not `rembg` |
+| Too many granular `dev-*` quality targets | Collapse `dev-lint` + `dev-typecheck` + `dev-format` + `dev-check` into one `dev-format` (runs all three — prettier+eslint+tsc usually <5s for Node projects). Split only if CI parallelizes them. Same for `dev-test` + `dev-test-e2e` → one `test`. |
+| `run-*-all` / "Full Stack" Cartesian section | Projects with a `docs/` sibling grow `run-testnet-all` / `run-mainnet-all` / `run-local-all` / `run-local-mainnet-all` that just background the docs site. These are almost never used — users open a second terminal. Keep one `run-docs` target in the "Run" section and drop the Cartesian matrix. |
+| Quick Start repeats targets | If Quick Start lists `setup` and `status`, and Environment Utilities lists `setup` and `status` again, you're doubling help height. Make Quick Start a numbered instruction list (`1. make env-setup`, `2. make run-prod`) and let targets live once in their real section. |
 | `help-unclassified` shows filename | Use `sed 's/^[^:]*://'` to strip `Makefile:` prefix |
 | No `.env` export | Inline-source in the recipe: `@set -a && . ./.env && set +a && $(CMD)` (or `-include .env` for weaker cases — see Env File Loading) |
 | Stale shell `DATABASE_URL` silently overrides `.env` | Use inline `set -a && . ./.env && set +a` in any recipe that depends on a specific `.env` value. `-include` alone loses to already-exported shell vars. |
 | Secret committed to git | Add gitignored file (e.g. `.env.prod`), verify with `git check-ignore`, grep staged diff for a secret fragment before `git add`: `git diff --cached \| grep -c "$FRAGMENT"` |
 | Single-service `docker-compose.yml` | For one Postgres container, a plain `docker run` in `db-start` is lighter than a compose file. Compose pays off only when you have 2+ services. |
+| Dockerized Postgres on port 5432 clashes with host Homebrew Postgres | Default dev container to `PG_PORT ?= 5433` (and update `DATABASE_URL` accordingly). 5432 is nearly always claimed on macOS dev machines. |
+| `pgcli` rejects `postgresql+psycopg://...` URL | pgcli doesn't understand SQLAlchemy dialect markers. Strip before use: `PGCLI_URL=$$(echo "$$DATABASE_URL" \| sed 's/+psycopg//') && pgcli "$$PGCLI_URL"`. |
+| FastAPI `api-export-spec` hardcodes model import | The export script imports `app.main:app`. Parameterize via the `APP_MODULE` make variable if your entrypoint differs. |
 
 ## Cleanup Makefile Workflow
 
