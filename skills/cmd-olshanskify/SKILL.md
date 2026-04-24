@@ -9,11 +9,24 @@ allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 
 Rewrite or edit content so it matches Olshansky's voice and conventions. Templates encode the rules; this skill picks the right template and applies it.
 
+- [Global Style Rules](#global-style-rules)
 - [1. Pick a Template](#1-pick-a-template)
 - [2. Inspect the Target](#2-inspect-the-target)
 - [3. Propose the Olshanskified Version](#3-propose-the-olshanskified-version)
 - [4. Apply on Approval](#4-apply-on-approval)
 - [5. Evolving the Templates](#5-evolving-the-templates)
+
+## Global Style Rules
+
+These apply across **all** templates (docs, code, blog, presentation) and across any conversational prompt / status output this skill produces:
+
+- **Signal user action with an emoji or admonition.** Whenever the reader must decide, approve, resolve, or confirm something, prefix the prompt with a status glyph — green/yellow/red circle or a GitHub-style admonition:
+  - 🟢 safe / ready to proceed
+  - 🟡 caution / needs review
+  - 🔴 blocked / must be addressed
+  - ⚠️ / `> [!WARNING]` — urgent or destructive action
+  - ⏳ / 🤔 — waiting on user input
+- **Wrap every list/option label in square brackets.** If something is a selectable option, a referenced list item, or a status tag, use `[…]` around it. Examples: `[1] Approve`, `[2] Reject`, `[✅ DONE]`, `[OPTION A]`, `[FEAT]`, `[WALLET]`. Consistent brackets make options scannable and unambiguous.
 
 ## 1. Pick a Template
 

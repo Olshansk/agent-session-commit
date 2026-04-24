@@ -79,11 +79,13 @@ Write the description to `PR_DESCRIPTION.md` and display both the title and desc
 
 ### 4. Ask user to approve, edit, or reject
 
-Use `AskUserQuestion` to present the generated title and description and ask the user to:
+Use `AskUserQuestion` to present the generated title and description. Prefix the prompt with an emoji (e.g., `⏳`, `🤔`, or `📝`) and use square-bracketed numeric option labels so the user can reply with `[1]`, `[2]`, or `[3]`:
 
-1. **Approve** as-is
-2. **Request changes** (provide feedback, re-generate)
-3. **Reject** (stop here)
+> ⏳ Please review and choose one:
+>
+> - **[1] Approve** as-is
+> - **[2] Request changes** (provide feedback, re-generate)
+> - **[3] Reject** (stop here)
 
 Do NOT proceed to step 5 until the user explicitly approves.
 
