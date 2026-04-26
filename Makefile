@@ -18,10 +18,10 @@ help: ## Prints all the targets in the Makefile
 	@echo "$(BOLD)$(CYAN)Agent Skills Repository$(RESET)"
 	@echo ""
 	@echo "$(BOLD)=== Skills ===$(RESET)"
-	@grep -h -E '^(link|list|publish).*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
+	@grep -h -E '^(link|list|publish|sync-external).*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
 	@echo ""
 	@echo "$(BOLD)=== Backup ===$(RESET)"
-	@grep -h -E '^sync.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
+	@grep -h -E '^sync:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
 	@echo ""
 	@echo "$(BOLD)=== Testing ===$(RESET)"
 	@grep -h -E '^stress.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
@@ -112,6 +112,10 @@ link-skills: ## Symlink repo + third-party skills into Claude, Gemini, and Codex
 		fi; \
 	done
 	@echo "Done"
+
+.PHONY: sync-external-skills
+sync-external-skills: ## Regenerate the 3rd-party skills table in README.md from ~/.agents/skills/
+	@python3 $(CURDIR)/scripts/sync_external_skills.py
 
 .PHONY: list-skills
 list-skills: ## List all skills with descriptions

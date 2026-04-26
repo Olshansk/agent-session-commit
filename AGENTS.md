@@ -111,6 +111,8 @@ Whenever a skill is added, edited, or removed in `skills/`, update **all** of th
 3. **`make link-skills`** — run to create or clean up symlinks
 4. **Verify** — confirm the skill appears (or is removed) in `~/.claude/skills/` after linking
 
+After installing/removing 3rd-party skills (`npx skills add ...`), run `make sync-external-skills` to refresh the "3rd Party Skills" table in `README.md` (auto-generated between `<!-- BEGIN: 3rd-party-skills -->` markers from `~/.agents/skills/`).
+
 ## Documentation Standards
 
 - Code blocks must be comment-free and directly copy-pastable
