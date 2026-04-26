@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""Regenerate the 3rd-party skills table in README.md from ~/.agents/skills/.
+"""Regenerate the 3rd-party skills tables in README.md from ~/.agents/skills/.
 
-Skips any skill whose name also exists in this repo's skills/ directory
-(those are authored here and shown in the other tables).
+Splits skills into two tables by publisher signature:
+  - gstack collection: descriptions ending with "(gstack)"
+  - other 3rd-party: everything else
+
+Skips any skill whose name also exists in this repo's skills/ directory.
 """
 
 from __future__ import annotations
@@ -16,8 +19,12 @@ REPO_SKILLS = REPO_ROOT / "skills"
 THIRDPARTY_SKILLS = Path.home() / ".agents" / "skills"
 README = REPO_ROOT / "README.md"
 
-BEGIN_MARKER = "<!-- BEGIN: 3rd-party-skills -->"
-END_MARKER = "<!-- END: 3rd-party-skills -->"
+GSTACK_MARKER_RE = re.compile(r"\(gstack\)(?:\s|$)")
+
+BLOCKS = [
+    ("3rd-party-skills", lambda desc: not GSTACK_MARKER_RE.search(desc)),
+    ("gstack-skills", lambda desc: bool(GSTACK_MARKER_RE.search(desc))),
+]
 
 
 def parse_frontmatter(skill_md: Path) -> dict[str, str]:
@@ -52,6 +59,7 @@ def parse_frontmatter(skill_md: Path) -> dict[str, str]:
 
 def collect_third_party() -> list[tuple[str, str]]:
     repo_names = {p.name for p in REPO_SKILLS.iterdir() if p.is_dir()}
+    seen: set[str] = set()
     rows: list[tuple[str, str]] = []
     if not THIRDPARTY_SKILLS.is_dir():
         return rows
@@ -63,6 +71,9 @@ def collect_third_party() -> list[tuple[str, str]]:
             continue
         fm = parse_frontmatter(skill_md)
         name = fm.get("name", skill_dir.name)
+        if name in repo_names or name in seen:
+            continue
+        seen.add(name)
         desc = fm.get("description", "").replace("|", "\\|").replace("\n", " ").strip()
         rows.append((name, desc))
     return rows
@@ -75,29 +86,32 @@ def render_table(rows: list[tuple[str, str]]) -> str:
     return "\n".join(lines)
 
 
-def replace_block(content: str, table: str) -> str:
-    pattern = re.compile(
-        re.escape(BEGIN_MARKER) + r".*?" + re.escape(END_MARKER),
-        re.DOTALL,
-    )
-    block = f"{BEGIN_MARKER}\n\n{table}\n\n{END_MARKER}"
+def replace_block(content: str, marker: str, table: str) -> str:
+    begin = f"<!-- BEGIN: {marker} -->"
+    end = f"<!-- END: {marker} -->"
+    pattern = re.compile(re.escape(begin) + r".*?" + re.escape(end), re.DOTALL)
+    block = f"{begin}\n\n{table}\n\n{end}"
     if not pattern.search(content):
-        raise SystemExit(
-            f"markers not found in {README}. Add {BEGIN_MARKER} and {END_MARKER} first."
-        )
+        raise SystemExit(f"markers '{begin}' / '{end}' not found in {README}")
     return pattern.sub(block, content)
 
 
 def main() -> int:
     rows = collect_third_party()
-    table = render_table(rows)
     original = README.read_text(encoding="utf-8")
-    updated = replace_block(original, table)
+    updated = original
+    counts: dict[str, int] = {}
+    for marker, predicate in BLOCKS:
+        subset = [r for r in rows if predicate(r[1])]
+        counts[marker] = len(subset)
+        updated = replace_block(updated, marker, render_table(subset))
     if updated != original:
         README.write_text(updated, encoding="utf-8")
-        print(f"Updated {README} with {len(rows)} 3rd-party skill(s)")
+        summary = ", ".join(f"{m}={c}" for m, c in counts.items())
+        print(f"Updated {README} ({summary})")
     else:
-        print(f"No changes — {len(rows)} 3rd-party skill(s) already in sync")
+        summary = ", ".join(f"{m}={c}" for m, c in counts.items())
+        print(f"No changes — already in sync ({summary})")
     return 0
 
 

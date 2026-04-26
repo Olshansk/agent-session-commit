@@ -213,6 +213,7 @@ Each skill directory contains a `SKILL.md` with YAML frontmatter. Most `cmd-*` s
 **Task skills (invoke with `/name`):**
 
 - `cmd-codex-review-plan` - Pipe the current plan to `codex exec` for an outside review, then revise the plan with a changelog of accepted/rejected suggestions
+- `cmd-codex-review-unstaged` - Pipe Claude's implementation summary + `git diff HEAD` to `codex exec`, get a review applying cmd-follow-up + cmd-pr-edgecase methodology, then synthesize a prioritized iteration plan (apply/defer/reject)
 - `cmd-pr-description` - Generate concise PR descriptions
 - `cmd-pr-test-plan` - Generate manual test plans for PRs
 - `cmd-pr-build-context` - Build high-signal PR context for review
