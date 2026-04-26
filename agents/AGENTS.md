@@ -235,6 +235,7 @@ Each skill directory contains a `SKILL.md` with YAML frontmatter. Most `cmd-*` s
 - `cmd-gp-issue` - Create GitHub issues from conversation context
 - `cmd-persona` - Prime the agent with a behavioral persona for the conversation
 - `cmd-store-plan` - Capture conversation plans/decisions into structured markdown in `plans/`
+- `cmd-what` - Catch the user up on what the agent CLI has been doing in 3-5 ultra-tight `**label**: explanation` bullets
 - `debug-timeouts` - Debug timeout hierarchies across application layers
 
 ## Communication Format Preferences

@@ -81,6 +81,7 @@ Skills I use daily but might rename or delete in the future. I prefix them with 
 | [`cmd-follow-up`](skills/cmd-follow-up/SKILL.md)                               | Post-implementation reflection — surface missed work, simplifications, and idiomatic fixes    |
 | [`cmd-latest-msg`](skills/cmd-latest-msg/SKILL.md)                             | Store or retrieve the latest agent message to `/tmp/agents/{agent}/`                          |
 | [`cmd-sculpt-code`](skills/cmd-sculpt-code/SKILL.md)                           | Reshape code for readability, naming, structure, TODOs, and reduced surface area              |
+| [`cmd-what`](skills/cmd-what/SKILL.md)                                         | Catch the user up on session activity in 3-5 ultra-tight `**label**: explanation` bullets     |
 | [`cmd-rfc-review`](skills/cmd-rfc-review/SKILL.md)                             | Review RFCs for problem clarity, compliance, security, and performance using SCQA             |
 | [`cmd-scope-sweep`](skills/cmd-scope-sweep/SKILL.md)                           | Final pass to identify missed items, edge cases, and risks before closing scope               |
 | [`makefile`](skills/makefile/SKILL.md)                                         | Create or improve Makefiles with templates (python-uv, fastapi, nodejs, go, flutter)          |
