@@ -82,7 +82,6 @@ Skills I use daily but might rename or delete in the future. I prefix them with 
 | [`cmd-latest-msg`](skills/cmd-latest-msg/SKILL.md)                             | Store or retrieve the latest agent message to `/tmp/agents/{agent}/`                          |
 | [`cmd-sculpt-code`](skills/cmd-sculpt-code/SKILL.md)                           | Reshape code for readability, naming, structure, TODOs, and reduced surface area              |
 | [`cmd-rfc-review`](skills/cmd-rfc-review/SKILL.md)                             | Review RFCs for problem clarity, compliance, security, and performance using SCQA             |
-| [`cmd-rss-feed-generator`](skills/cmd-rss-feed-generator/SKILL.md)             | Generate Python RSS feed scrapers with hourly GitHub Actions integration                      |
 | [`cmd-scope-sweep`](skills/cmd-scope-sweep/SKILL.md)                           | Final pass to identify missed items, edge cases, and risks before closing scope               |
 | [`makefile`](skills/makefile/SKILL.md)                                         | Create or improve Makefiles with templates (python-uv, fastapi, nodejs, go, flutter)          |
 | [`mermaid-render`](skills/mermaid-render/SKILL.md)                             | Render and display Mermaid diagrams inline in iTerm2 or Ghostty                               |
@@ -95,11 +94,6 @@ Skills installed from other publishers via `npx skills add`. These live in `~/.a
 
 | Skill | Description |
 | ----- | ----------- |
-| `cmd-clean-code` | Improve code readability without altering functionality using idiomatic best practices |
-| `cmd-code-cleanup` | Remove dead code and duplication pragmatically with a 5-phase systematic approach |
-| `cmd-pr-sweep` | Review changes for test gaps, simplification, naming consistency, reuse opportunities, and TODO quality |
-| `cmd-python-stylizer` | Analyze Python code for style improvements including naming, structure, nesting, and cognitive load reduction |
-| `cmd-rss-feed-generator` | Generate Python RSS feed scrapers from blog websites, integrated with hourly GitHub Actions |
 | `open-gstack-browser` | Launch GStack Browser — AI-controlled Chromium with the sidebar extension baked in. Opens a visible browser window where you can watch every action in real time. The sidebar shows a live activity feed and chat. Anti-bot stealth built in. Use when asked to "open gstack browser", "launch browser", "connect chrome", "open chrome", "real browser", "launch chrome", "side panel", or "control my browser". Voice triggers (speech-to-text aliases): "show me the browser". |
 | `find-skills` | Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that can...", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill. |
 | `grove` | Grove is a wallet-first, agent-friendly Linktree that helps creators earn revenue from high-quality content online. Covers wallet setup, identity/handle registration, creator discovery, crypto tipping, paid messaging (Tip to Talk), content feed discovery, stream alerts, and earning. Use when the user wants to tip, pay, message, or attribute value to a creator, set up a web3 profile, discover content, or monetize content and attention. |
