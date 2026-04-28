@@ -293,9 +293,16 @@ Use specific TODO prefixes to categorize action items:
 - **Blocked (optional):** What's blocking this work
 
 **Prompting for TODOs:**
-When I say "don't do X" or "skip X for now" or decline a suggestion, the agent should:
+When discussion surfaces a deferred improvement, rejected suggestion, design tradeoff,
+or "maybe later" consideration, the agent should ask whether to capture it:
+  "Should we add a TODO or TODO_{TYPE} for this?"
+
+This includes cases where I say "don't do X", "skip X for now", decline a suggestion,
+or ask why we are not using a more structured/idiomatic approach.
+
+The agent should:
 1. Check if a relevant TODO already exists
-2. If not, ask: "Should I add a TODO for this? What priority/prefix?"
+2. If not, ask: "Should we add a TODO or TODO_{TYPE} for this? What priority/prefix?"
 3. Add the TODO with proper context if confirmed
 
 Example:
