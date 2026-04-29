@@ -10,6 +10,7 @@
 - [Context Loading Strategy](#context-loading-strategy)
 - [Custom Skills](#custom-skills)
 - [General Guidelines in code](#general-guidelines-in-code)
+- [Logging Conventions](#logging-conventions)
 - [TODO Comment Standards](#todo-comment-standards)
 - [Response Status Tags](#response-status-tags)
 
@@ -268,6 +269,47 @@ plans/{name}_{yyyy}_{mm}_{dd}.md
 ```
 
 Example: `plans/frontend-logic-cleanup_2026_03_28.md`
+
+## Logging Conventions
+
+When adding logging to any project, establish and follow emoji + color conventions for scannable output.
+
+### Emoji prefixes by intent
+
+| Emoji | Level | When to use |
+|-------|-------|-------------|
+| `🔍` | info | Starting a long analysis, search, or extraction |
+| `🔧` | info | Generating or mutating artifacts (migrations, exports, writes) |
+| `✅` | info | Successful completion — always include summary stats (count, timing) |
+| `⚠️` | warning | Partial failure — some items failed, non-fatal fallback |
+| `🚨` | warning/error | Critical failure — all items failed, data loss risk, broken dependency |
+
+### Color markup for action-item prioritization
+
+Use color markup (Rich, ANSI, or equivalent for the project's logging stack) when surfacing issues that need human attention:
+
+| Color | Priority | When to use |
+|-------|----------|-------------|
+| Red | 🔴 High — stop and fix now | All files unreadable, corrupt state, empty output when data expected |
+| Yellow | 🟡 Medium — review soon | Some items failed, low confidence, gaps or anomalies in data |
+| Green | 🟢 Informational — no action needed | Cache hit, clean run, all items processed successfully |
+| Cyan | Entity names | Always use for schema names, file names, IDs, dataset names |
+
+### Examples (Rich markup — adapt syntax to project's logging stack)
+
+```python
+# Entry
+logger.info("🔍 Starting extraction for [bold cyan]%s[/bold cyan] (%d files)", name, n)
+
+# Clean exit
+logger.info("✅ Complete for [bold cyan]%s[/bold cyan]: [bold green]%d files[/bold green] in %.2fs", name, n, elapsed)
+
+# Partial failure
+logger.warning("⚠️  [bold cyan]%s[/bold cyan]: [bold yellow]%d/%d items failed[/bold yellow]", name, errors, total)
+
+# Critical failure
+logger.error("🚨 Failed for ALL files in [bold cyan]%s[/bold cyan] — [bold red]check dependencies[/bold red]", name)
+```
 
 ## TODO Comment Standards
 
