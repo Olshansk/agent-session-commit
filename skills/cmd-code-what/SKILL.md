@@ -1,5 +1,5 @@
 ---
-name: cmd-what
+name: cmd-code-what
 description: Catch the user up on what the agent has been doing in the current session with 3-5 ultra-tight bullet points. Use when the user invokes /cmd-what, asks "what are you doing", "what did you do", "catch me up", "status", "where are we", or otherwise needs a fast situational summary of in-flight agent work.
 disable-model-invocation: true
 ---

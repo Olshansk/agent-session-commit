@@ -1,5 +1,5 @@
 ---
-name: cmd-local-repo-skills
+name: cmd-skills-local-repo
 description: Scaffold cross-tool repo-local skills and agent instructions with canonical source in .agents/ and symlinks for Claude, Codex, Gemini, and Codex-home
 disable-model-invocation: false
 ---

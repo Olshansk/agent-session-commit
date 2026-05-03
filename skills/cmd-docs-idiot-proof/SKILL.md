@@ -1,5 +1,5 @@
 ---
-name: cmd-idiot-proof-docs
+name: cmd-docs-idiot-proof
 description: Simplify documentation for clarity and scannability with approval-gated edits
 disable-model-invocation: false
 ---

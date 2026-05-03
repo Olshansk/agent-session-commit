@@ -200,45 +200,51 @@ swiftlint --fix
 **Source of truth:** `~/workspace/agent-skills/skills/` is the canonical location for all skills.
 
 - When asked to update, edit, or create a skill, **always work in `~/workspace/agent-skills/skills/<skill-name>/`** regardless of the current working directory
-- When any personal skill changes, including `cmd-*`, `makefile`, or `mermaid-render`, **always update `~/workspace/agent-skills/README.md` and relevant agent metadata** so the skill stays discoverable
+- When any personal skill changes, **always update `~/workspace/agent-skills/README.md` and relevant agent metadata** so the skill stays discoverable
 - Runtime path `~/.claude/skills/` contains symlinks back to the repo (via `make link-skills`)
 - Edits in the repo propagate instantly through symlinks — no copy step needed
 
 > **After `npx skills add olshansk/agent-skills`:** always run `make link-skills` in `~/workspace/agent-skills` to restore direct symlinks. npx creates copies that break the live-edit flow.
 
-Each skill directory contains a `SKILL.md` with YAML frontmatter. Most `cmd-*` skills have `disable-model-invocation: true` (user invokes manually via `/cmd-*`). Exception: `cmd-store-plan` auto-triggers on phrases like "store this plan" / "save this plan for later".
+Each skill directory contains a `SKILL.md` with YAML frontmatter. Most `cmd-*` skills have `disable-model-invocation: true` (user invokes manually via `/cmd-*`). Exception: `cmd-plan-store` auto-triggers on phrases like "store this plan" / "save this plan for later".
+
+**Naming conventions:**
+- Personal global skills: always prefix with `cmd-`
+- Repo-specific skills: prefix with the repo name (e.g., `grove-`, `pocket-`) or ask for a name if ambiguous
 
 **Reference skills:**
 
-- `makefile/` - Makefile conventions, templates, and patterns. Read `SKILL.md` for guidelines, check `templates/` for starter files.
+- `cmd-makefile/` - Makefile conventions, templates, and patterns. Read `SKILL.md` for guidelines, check `templates/` for starter files.
 
 **Task skills (invoke with `/name`):**
 
+- `cmd-agent-persona-set` - Prime the agent with a behavioral persona for the conversation
+- `cmd-code-what` - Catch the user up on what the agent CLI has been doing in 3-5 ultra-tight `**label**: explanation` bullets
 - `cmd-codex-review-plan` - Pipe the current plan to `codex exec` for an outside review, then revise the plan with a changelog of accepted/rejected suggestions
-- `cmd-codex-review-unstaged` - Pipe Claude's implementation summary + `git diff HEAD` to `codex exec`, get a review applying cmd-follow-up + cmd-pr-edgecase methodology, then synthesize a prioritized iteration plan (apply/defer/reject)
-- `cmd-pr-description` - Generate concise PR descriptions
-- `cmd-pr-test-plan` - Generate manual test plans for PRs
-- `cmd-pr-build-context` - Build high-signal PR context for review
-- `cmd-pr-review-prepare` - Prepare branch for code review
-- `cmd-pr-conflict-resolver` - Resolve merge conflicts with 3-tier classification
-- `cmd-pr-gh-comments` - Holistically triage PR comments: line-range context, adjacent-improvement sweeps, approval-gated resolution, optional AGENTS.md refinement, proposes cmd-olshanskify template updates when comments come from @olshansk
-- `cmd-olshanskify` - Apply Olshansky's personal style to docs, code, blog posts, or presentations via templates in `templates/`
-- `cmd-productionize` - Transform apps into production-ready deployments
-- `cmd-sculpt-code` - Reshape code quality: naming, structure, TODOs, surface area
-- `cmd-pr-edgecase` - Review PR for test gaps, logic edge cases, failure modes
-- `cmd-scope-sweep` - Final pass to identify missed items and risks
-- `cmd-follow-up` - Post-implementation reflection: missed work, simplifications, idiomatic fixes
-- `cmd-rfc-review` - Review RFCs using SCQA framework
-- `cmd-chain-halt-code-reviewer` - Review protocol code for chain halt risks
-- `cmd-rss-feed-generator` - Generate Python RSS feed scrapers
-- `cmd-idiot-proof-docs` - Simplify documentation for clarity
-- `cmd-latest-msg` - Store or retrieve the latest agent message to /tmp/agents/{agent}/
+- `cmd-codex-review-unstaged` - Pipe Claude's implementation summary + `git diff HEAD` to `codex exec`, get a review applying cmd-pr-follow-up + cmd-pr-edgecase methodology, then synthesize a prioritized iteration plan (apply/defer/reject)
+- `cmd-docs-idiot-proof` - Simplify documentation for clarity
 - `cmd-email-md` - Convert markdown to email-safe HTML with inline styles
-- `cmd-gp-issue` - Create GitHub issues from conversation context
-- `cmd-persona` - Prime the agent with a behavioral persona for the conversation
-- `cmd-store-plan` - Capture conversation plans/decisions into structured markdown in `plans/`
-- `cmd-what` - Catch the user up on what the agent CLI has been doing in 3-5 ultra-tight `**label**: explanation` bullets
-- `debug-timeouts` - Debug timeout hierarchies across application layers
+- `cmd-gh-issue` - Create GitHub issues from conversation context
+- `cmd-latest-msg` - Store or retrieve the latest agent message to /tmp/agents/{agent}/
+- `cmd-olshanskify` - Apply Olshansky's personal style to docs, code, blog posts, or presentations via templates in `templates/`
+- `cmd-plan-store` - Capture conversation plans/decisions into structured markdown in `plans/`
+- `cmd-pr-build-context` - Build high-signal PR context for review
+- `cmd-pr-conflict-resolver` - Resolve merge conflicts with 3-tier classification
+- `cmd-pr-description` - Generate concise PR descriptions
+- `cmd-pr-edgecase` - Review PR for test gaps, logic edge cases, failure modes
+- `cmd-pr-follow-up` - Post-implementation reflection: missed work, simplifications, idiomatic fixes
+- `cmd-pr-gh-comments` - Holistically triage PR comments: line-range context, adjacent-improvement sweeps, approval-gated resolution, optional AGENTS.md refinement, proposes cmd-olshanskify template updates when comments come from @olshansk
+- `cmd-pr-review-prepare` - Prepare branch for code review
+- `cmd-pr-scope-sweep` - Final pass to identify missed items and risks
+- `cmd-pr-sculpt-code` - Reshape code quality: naming, structure, TODOs, surface area
+- `cmd-pr-test-plan` - Generate manual test plans for PRs
+- `cmd-productionize` - Transform apps into production-ready deployments
+- `cmd-review-chain-halt` - Review protocol code for chain halt risks
+- `cmd-review-rfc` - Review RFCs using SCQA framework
+- `cmd-session-commit` - Capture session learnings and update AGENTS.md
+- `cmd-skills-dashboard` - Scrape skills.sh and generate an interactive HTML dashboard
+- `cmd-skills-local-repo` - Scaffold cross-tool repo-local skills and agent instructions
+- `cmd-write-proofread` - Proofread posts for spelling, grammar, repetition, logic, and weak arguments
 
 ## Communication Format Preferences
 

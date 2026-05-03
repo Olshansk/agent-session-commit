@@ -1,6 +1,6 @@
 ---
 name: cmd-codex-review-unstaged
-description: Get a second opinion on what Claude just implemented from Codex (codex exec headless mode). Pipes Claude's summary plus the working-tree diff to codex, asks codex to leverage cmd-follow-up and cmd-pr-edgecase methodology to surface bugs, test gaps, edge cases, and simplification opportunities, then synthesizes a prioritized iteration plan from the feedback. Triggers on "/cmd-codex-review-unstaged", "review my changes with codex", "have codex review what I just did", or after a non-trivial implementation pass before commit.
+description: Get a second opinion on what Claude just implemented from Codex (codex exec headless mode). Pipes Claude's summary plus the working-tree diff to codex, asks codex to leverage cmd-pr-follow-up and cmd-pr-edgecase methodology to surface bugs, test gaps, edge cases, and simplification opportunities, then synthesizes a prioritized iteration plan from the feedback. Triggers on "/cmd-codex-review-unstaged", "review my changes with codex", "have codex review what I just did", or after a non-trivial implementation pass before commit.
 disable-model-invocation: false
 ---
 
@@ -18,7 +18,7 @@ Use `codex exec` as an independent reviewer on the working-tree changes Claude j
 
 - After Claude finishes a non-trivial implementation pass and before commit
 - When the user says "review my changes with codex", "have codex check what I just did", or `/cmd-codex-review-unstaged`
-- As an outside cross-check before opening a PR — complements `cmd-follow-up` (Claude self-review) and `cmd-pr-edgecase` (edge-case sweep) by adding a fresh pair of eyes that didn't write the code
+- As an outside cross-check before opening a PR — complements `cmd-pr-follow-up` (Claude self-review) and `cmd-pr-edgecase` (edge-case sweep) by adding a fresh pair of eyes that didn't write the code
 
 ## Instructions
 
@@ -76,7 +76,7 @@ You will receive two files:
 Read both before reviewing.
 
 You also have access to two skill methodology references (read them before forming your review — they describe what to look for):
-- ~/.codex/skills/cmd-follow-up/SKILL.md — post-implementation reflection methodology (incomplete tasks, idiomatic concerns, modularity, simplification, comments/prose)
+- ~/.codex/skills/cmd-pr-follow-up/SKILL.md — post-implementation reflection methodology (incomplete tasks, idiomatic concerns, modularity, simplification, comments/prose)
 - ~/.codex/skills/cmd-pr-edgecase/SKILL.md — edge case and failure mode methodology (test gaps, malformed inputs, integration risks)
 
 Apply BOTH methodologies to this diff. Then go further: look for issues those skills do not cover.
@@ -214,7 +214,7 @@ After presenting the iteration plan, **ask the user** whether to apply the P0/P1
 
 - **Codex needs auth** — if `codex exec` errors with auth issues, tell the user to run `codex login` and stop.
 - **Read-only sandbox** — codex cannot modify files even if it tries. This is intentional.
-- **Skill paths are symlinked** — `~/.codex/skills/cmd-follow-up/SKILL.md` resolves to this repo via `make link-skills`. If codex reports it can't read those paths, the user may need to run `make link-skills` from `~/workspace/agent-skills`.
+- **Skill paths are symlinked** — `~/.codex/skills/cmd-pr-follow-up/SKILL.md` resolves to this repo via `make link-skills`. If codex reports it can't read those paths, the user may need to run `make link-skills` from `~/workspace/agent-skills`.
 - **Don't loop** — one codex review per invocation. After applying fixes, the user can re-run for another pass if desired.
 - **Untracked files** — `git diff HEAD` does NOT show untracked files. If the implementation added new files that aren't yet tracked, mention this to the user and offer to `git add -N` them so they appear in the diff (intent-to-add stages the path without content, making the diff include them).
 - **Companion skill** — pair with `cmd-codex-review-plan` (pre-implementation plan review) for full coverage: codex reviews the plan before execution AND the diff after.

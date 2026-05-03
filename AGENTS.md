@@ -96,6 +96,11 @@ skills/<skill-name>/
 - `description` should say what it does and when to use it
 - Keep `SKILL.md` concise; move extended content to `references/`
 
+**Naming conventions:**
+- Personal global skills: always prefix with `cmd-`
+- Repo-specific skills: prefix with the repo name (e.g., `grove-`, `pocket-`) or ask if ambiguous
+- No `cmd-` prefix for polished distribution skills intended for public install
+
 Scripts:
 
 - Use `scripts/` for reusable or complex command logic
@@ -104,7 +109,7 @@ Scripts:
 
 ## Modifying Skills (Add, Edit, Remove)
 
-Whenever any skill is added, edited, or removed in `skills/`, including personal skills like `cmd-*`, `makefile`, or `mermaid-render`, update **all** of the following:
+Whenever any skill is added, edited, or removed in `skills/`, update **all** of the following:
 
 1. **`README.md`** — add, update, or remove the hyperlinked row in the appropriate table (link format: `[skill-name](skills/skill-name/SKILL.md)`). Keep the table sorted alphabetically.
 2. **`~/.claude/CLAUDE.md`** — add, update, or remove the entry in the "Task skills" list under "Custom Skills"

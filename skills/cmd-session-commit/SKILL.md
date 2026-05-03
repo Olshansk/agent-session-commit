@@ -1,5 +1,5 @@
 ---
-name: session-commit
+name: cmd-session-commit
 description: Capture learnings from the current coding session and update AGENTS.md. Use when the user asks to close the loop, run session-commit, record best practices, or update agent instructions based on recent work.
 license: MIT
 compatibility: Requires read/write access to files in the current repository. Works best in agentic coding CLIs with shell execution support.

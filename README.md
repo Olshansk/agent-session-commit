@@ -24,7 +24,7 @@
   - [3rd Party Skills](#3rd-party-skills)
   - [gstack Collection](#gstack-collection)
 - [Star History](#star-history)
-- [Demo of `skills-dashboard`](#demo-of-skills-dashboard)
+- [Demo of `cmd-skills-dashboard`](#demo-of-cmd-skills-dashboard)
 - [How It Works](#how-it-works)
 
 ## Quickstart
@@ -41,7 +41,7 @@ Then ask your agent to run any installed skill:
 - _"generate skills dashboard"_
 
 > [!TIP]
-> Start with [`session-commit`](skills/session-commit/SKILL.md) — it turns every coding session into durable knowledge by extracting patterns, decisions, and gotchas into your `AGENTS.md`. Future sessions (and future agents) pick up right where you left off.
+> Start with [`cmd-session-commit`](skills/cmd-session-commit/SKILL.md) — it turns every coding session into durable knowledge by extracting patterns, decisions, and gotchas into your `AGENTS.md`. Future sessions (and future agents) pick up right where you left off.
 
 ## Available Skills
 
@@ -51,42 +51,42 @@ Skills I've polished for public use.
 
 | Skill                                                  | What it does                                                  | Trigger examples                                           |
 | ------------------------------------------------------ | ------------------------------------------------------------- | ---------------------------------------------------------- |
-| [`session-commit`](skills/session-commit/SKILL.md)     | Captures session learnings and updates `AGENTS.md` safely     | "run session commit", "close the loop", "update AGENTS.md" |
-| [`skills-dashboard`](skills/skills-dashboard/SKILL.md) | Scrapes skills.sh and generates an interactive HTML dashboard | "generate skills dashboard", "show skills ecosystem"       |
+| [`cmd-session-commit`](skills/cmd-session-commit/SKILL.md)     | Captures session learnings and updates `AGENTS.md` safely     | "run session commit", "close the loop", "update AGENTS.md" |
+| [`cmd-skills-dashboard`](skills/cmd-skills-dashboard/SKILL.md) | Scrapes skills.sh and generates an interactive HTML dashboard | "generate skills dashboard", "show skills ecosystem"       |
 
 ### Personal Skills (`cmd-*`)
 
 Skills I use daily but might rename or delete in the future. I prefix them with `cmd-` so I can easily also leverage them as custom slash commands in claude code.
 
-| Skill                                                                          | Description                                                                                   |
-| ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| [`cmd-chain-halt-code-reviewer`](skills/cmd-chain-halt-code-reviewer/SKILL.md) | Review protocol code for chain halt risks, non-determinism, and onchain behavior bugs         |
-| [`cmd-codex-review-plan`](skills/cmd-codex-review-plan/SKILL.md)               | Get a second-opinion plan review from Codex (`codex exec`) before exiting plan mode           |
-| [`cmd-codex-review-unstaged`](skills/cmd-codex-review-unstaged/SKILL.md)       | Have Codex review the working-tree diff and synthesize a prioritized iteration plan           |
-| [`cmd-email-md`](skills/cmd-email-md/SKILL.md)                                 | Convert markdown to email-safe HTML with inline styles and cross-client compatibility         |
-| [`cmd-gh-issue`](skills/cmd-gh-issue/SKILL.md)                                 | Create structured GitHub issues from conversation context using `gh` CLI                      |
-| [`cmd-idiot-proof-docs`](skills/cmd-idiot-proof-docs/SKILL.md)                 | Simplify documentation for clarity and scannability with approval-gated edits                 |
-| [`cmd-local-repo-skills`](skills/cmd-local-repo-skills/SKILL.md)               | Scaffold cross-tool repo-local skills with canonical source in `.agents/skills/` and symlinks |
-| [`cmd-olshanskify`](skills/cmd-olshanskify/SKILL.md)                           | Apply Olshansky's personal style to docs, code, blog posts, or presentations via templates    |
-| [`cmd-persona`](skills/cmd-persona/SKILL.md)                                   | Prime the agent with a behavioral persona for the conversation                                |
-| [`cmd-pr-build-context`](skills/cmd-pr-build-context/SKILL.md)                 | Build high-signal PR context with diff analysis, risk assessment, and discussion questions    |
-| [`cmd-pr-conflict-resolver`](skills/cmd-pr-conflict-resolver/SKILL.md)         | Resolve merge conflicts with context-aware 3-tier classification and escalation               |
-| [`cmd-pr-description`](skills/cmd-pr-description/SKILL.md)                     | Generate concise PR descriptions by analyzing the diff against a base branch                  |
-| [`cmd-pr-gh-comments`](skills/cmd-pr-gh-comments/SKILL.md)                     | Holistically triage PR comments with line-range context, adjacent sweeps, approval-gated resolution, and cmd-olshanskify updates for @olshansk feedback |
-| [`cmd-pr-review-prepare`](skills/cmd-pr-review-prepare/SKILL.md)               | Prepare branch for code review by building context and identifying issues                     |
-| [`cmd-pr-edgecase`](skills/cmd-pr-edgecase/SKILL.md)                           | Review branch changes for test gaps, logic edge cases, and failure modes                      |
-| [`cmd-pr-test-plan`](skills/cmd-pr-test-plan/SKILL.md)                         | Generate manual test plans with verified commands and pass/fail criteria                      |
-| [`cmd-productionize`](skills/cmd-productionize/SKILL.md)                       | Transform apps into production-ready deployments with framework-specific optimization         |
-| [`cmd-proofread`](skills/cmd-proofread/SKILL.md)                               | Proofread posts for spelling, grammar, repetition, logic, weak arguments, and broken links    |
-| [`cmd-follow-up`](skills/cmd-follow-up/SKILL.md)                               | Post-implementation reflection — surface missed work, simplifications, and idiomatic fixes    |
-| [`cmd-latest-msg`](skills/cmd-latest-msg/SKILL.md)                             | Store or retrieve the latest agent message to `/tmp/agents/{agent}/`                          |
-| [`cmd-sculpt-code`](skills/cmd-sculpt-code/SKILL.md)                           | Reshape code for readability, naming, structure, TODOs, and reduced surface area              |
-| [`cmd-what`](skills/cmd-what/SKILL.md)                                         | Catch the user up on session activity in 3-5 ultra-tight `**label**: explanation` bullets     |
-| [`cmd-rfc-review`](skills/cmd-rfc-review/SKILL.md)                             | Review RFCs for problem clarity, compliance, security, and performance using SCQA             |
-| [`cmd-scope-sweep`](skills/cmd-scope-sweep/SKILL.md)                           | Final pass to identify missed items, edge cases, and risks before closing scope               |
-| [`cmd-store-plan`](skills/cmd-store-plan/SKILL.md)                             | Capture conversation plans, decisions, and action items into structured markdown in `plans/`   |
-| [`makefile`](skills/makefile/SKILL.md)                                         | Create or improve Makefiles with templates (python-uv, fastapi, nodejs, go, flutter)          |
-| [`mermaid-render`](skills/mermaid-render/SKILL.md)                             | Render and display Mermaid diagrams inline in iTerm2 or Ghostty                               |
+| Skill                                                                    | Description                                                                                   |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| [`cmd-agent-persona-set`](skills/cmd-agent-persona-set/SKILL.md)         | Prime the agent with a behavioral persona for the conversation                                |
+| [`cmd-code-what`](skills/cmd-code-what/SKILL.md)                         | Catch the user up on session activity in 3-5 ultra-tight `**label**: explanation` bullets     |
+| [`cmd-codex-review-plan`](skills/cmd-codex-review-plan/SKILL.md)         | Get a second-opinion plan review from Codex (`codex exec`) before exiting plan mode           |
+| [`cmd-codex-review-unstaged`](skills/cmd-codex-review-unstaged/SKILL.md) | Have Codex review the working-tree diff and synthesize a prioritized iteration plan           |
+| [`cmd-docs-idiot-proof`](skills/cmd-docs-idiot-proof/SKILL.md)           | Simplify documentation for clarity and scannability with approval-gated edits                 |
+| [`cmd-email-md`](skills/cmd-email-md/SKILL.md)                           | Convert markdown to email-safe HTML with inline styles and cross-client compatibility         |
+| [`cmd-gh-issue`](skills/cmd-gh-issue/SKILL.md)                           | Create structured GitHub issues from conversation context using `gh` CLI                      |
+| [`cmd-latest-msg`](skills/cmd-latest-msg/SKILL.md)                       | Store or retrieve the latest agent message to `/tmp/agents/{agent}/`                          |
+| [`cmd-makefile`](skills/cmd-makefile/SKILL.md)                           | Create or improve Makefiles with templates (python-uv, fastapi, nodejs, go, flutter)          |
+| [`cmd-mermaid-render`](skills/cmd-mermaid-render/SKILL.md)               | Render and display Mermaid diagrams inline in iTerm2 or Ghostty                               |
+| [`cmd-olshanskify`](skills/cmd-olshanskify/SKILL.md)                     | Apply Olshansky's personal style to docs, code, blog posts, or presentations via templates    |
+| [`cmd-plan-store`](skills/cmd-plan-store/SKILL.md)                       | Capture conversation plans, decisions, and action items into structured markdown in `plans/`  |
+| [`cmd-pr-build-context`](skills/cmd-pr-build-context/SKILL.md)           | Build high-signal PR context with diff analysis, risk assessment, and discussion questions    |
+| [`cmd-pr-conflict-resolver`](skills/cmd-pr-conflict-resolver/SKILL.md)   | Resolve merge conflicts with context-aware 3-tier classification and escalation               |
+| [`cmd-pr-description`](skills/cmd-pr-description/SKILL.md)               | Generate concise PR descriptions by analyzing the diff against a base branch                  |
+| [`cmd-pr-edgecase`](skills/cmd-pr-edgecase/SKILL.md)                     | Review branch changes for test gaps, logic edge cases, and failure modes                      |
+| [`cmd-pr-follow-up`](skills/cmd-pr-follow-up/SKILL.md)                   | Post-implementation reflection — surface missed work, simplifications, and idiomatic fixes    |
+| [`cmd-pr-gh-comments`](skills/cmd-pr-gh-comments/SKILL.md)               | Holistically triage PR comments with line-range context, adjacent sweeps, approval-gated resolution, and cmd-olshanskify updates for @olshansk feedback |
+| [`cmd-pr-review-prepare`](skills/cmd-pr-review-prepare/SKILL.md)         | Prepare branch for code review by building context and identifying issues                     |
+| [`cmd-pr-scope-sweep`](skills/cmd-pr-scope-sweep/SKILL.md)               | Final pass to identify missed items, edge cases, and risks before closing scope               |
+| [`cmd-pr-sculpt-code`](skills/cmd-pr-sculpt-code/SKILL.md)               | Reshape code for readability, naming, structure, TODOs, and reduced surface area              |
+| [`cmd-pr-test-plan`](skills/cmd-pr-test-plan/SKILL.md)                   | Generate manual test plans with verified commands and pass/fail criteria                      |
+| [`cmd-productionize`](skills/cmd-productionize/SKILL.md)                 | Transform apps into production-ready deployments with framework-specific optimization         |
+| [`cmd-review-chain-halt`](skills/cmd-review-chain-halt/SKILL.md)         | Review protocol code for chain halt risks, non-determinism, and onchain behavior bugs         |
+| [`cmd-review-rfc`](skills/cmd-review-rfc/SKILL.md)                       | Review RFCs for problem clarity, compliance, security, and performance using SCQA             |
+| [`cmd-skills-local-repo`](skills/cmd-skills-local-repo/SKILL.md)         | Scaffold cross-tool repo-local skills with canonical source in `.agents/skills/` and symlinks |
+| [`cmd-write-proofread`](skills/cmd-write-proofread/SKILL.md)             | Proofread posts for spelling, grammar, repetition, logic, weak arguments, and broken links    |
 
 ### 3rd Party Skills
 
@@ -169,11 +169,11 @@ Skills from the [gstack](https://gstack.dev) publisher (descriptions tagged `(gs
 
 [![Star History Chart](https://api.star-history.com/svg?repos=olshansk/agent-skills&type=date&legend=top-left)](https://www.star-history.com/#olshansk/agent-skills&type=date&legend=top-left)
 
-## Demo of `skills-dashboard`
+## Demo of `cmd-skills-dashboard`
 
 A live dashboard of the skills.sh ecosystem is available at **[skills-dashboard.olshansky.info](https://skills-dashboard.olshansky.info/)**.
 
-It shows publisher distribution, install counts, top skills, and the long-tail power law of adoption. Regenerate it yourself with the `skills-dashboard` skill.
+It shows publisher distribution, install counts, top skills, and the long-tail power law of adoption. Regenerate it yourself with the `cmd-skills-dashboard` skill.
 
 ![Skills Dashboard](skills-dashboard.png)
 

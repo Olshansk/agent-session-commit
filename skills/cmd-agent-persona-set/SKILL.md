@@ -1,5 +1,5 @@
 ---
-name: cmd-persona
+name: cmd-agent-persona-set
 description: Prime the agent with a behavioral persona for the conversation
 disable-model-invocation: false
 ---

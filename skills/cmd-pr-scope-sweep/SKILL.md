@@ -1,5 +1,5 @@
 ---
-name: cmd-scope-sweep
+name: cmd-pr-scope-sweep
 description: Final pass to identify missed items, edge cases, and risks before considering a scope done
 disable-model-invocation: false
 ---

@@ -1,5 +1,5 @@
 ---
-name: makefile
+name: cmd-makefile
 description: "Create or improve Makefiles with minimal complexity. Templates available: base, python-uv, python-fastapi, postgres, nodejs, go, chrome-extension, flutter, electron, static-site."
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 ---

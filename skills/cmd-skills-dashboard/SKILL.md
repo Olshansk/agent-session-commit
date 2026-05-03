@@ -1,5 +1,5 @@
 ---
-name: skills-dashboard
+name: cmd-skills-dashboard
 description: Scrape skills.sh and generate an interactive HTML dashboard showing skill distribution by publisher, installs, and categories. Rerun anytime to get fresh data.
 allowed-tools: Read Write Edit Bash WebFetch
 ---

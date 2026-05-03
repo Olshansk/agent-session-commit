@@ -1,5 +1,5 @@
 ---
-name: cmd-chain-halt-code-reviewer
+name: cmd-review-chain-halt
 description: Review protocol code for chain halt risks, non-determinism, and onchain behavior bugs
 disable-model-invocation: false
 context: fork

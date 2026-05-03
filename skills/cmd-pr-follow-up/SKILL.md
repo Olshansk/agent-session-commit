@@ -1,5 +1,5 @@
 ---
-name: cmd-follow-up
+name: cmd-pr-follow-up
 description: Self-review after implementation — surface missed work, simplification opportunities, and idiomatic improvements
 disable-model-invocation: false
 ---

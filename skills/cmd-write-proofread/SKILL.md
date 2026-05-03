@@ -1,5 +1,5 @@
 ---
-name: cmd-proofread
+name: cmd-write-proofread
 description: Proofread posts before publishing for spelling, grammar, repetition, logic, weak arguments, broken links, and optionally reformat for skimmability or shape the writing vibe toward a known author's style
 disable-model-invocation: false
 ---

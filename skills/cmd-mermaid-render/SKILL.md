@@ -1,5 +1,5 @@
 ---
-name: mermaid-render
+name: cmd-mermaid-render
 description: >
   Render and display Mermaid diagrams inline in iTerm2 or Ghostty.
   Use when creating, editing, or iterating on mermaid diagrams.
