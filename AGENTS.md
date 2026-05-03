@@ -104,12 +104,14 @@ Scripts:
 
 ## Modifying Skills (Add, Edit, Remove)
 
-Whenever a skill is added, edited, or removed in `skills/`, update **all** of the following:
+Whenever any skill is added, edited, or removed in `skills/`, including personal skills like `cmd-*`, `makefile`, or `mermaid-render`, update **all** of the following:
 
 1. **`README.md`** — add, update, or remove the hyperlinked row in the appropriate table (link format: `[skill-name](skills/skill-name/SKILL.md)`). Keep the table sorted alphabetically.
 2. **`~/.claude/CLAUDE.md`** — add, update, or remove the entry in the "Task skills" list under "Custom Skills"
 3. **`make link-skills`** — run to create or clean up symlinks
 4. **Verify** — confirm the skill appears (or is removed) in `~/.claude/skills/` after linking
+
+For personal skills, do not treat `README.md` or tool metadata as optional. If a skill is only for local slash-command use, it still needs the README row and agent metadata to stay discoverable.
 
 After installing/removing 3rd-party skills (`npx skills add ...`), run `make sync-external-skills` to refresh the "3rd Party Skills" table in `README.md` (auto-generated between `<!-- BEGIN: 3rd-party-skills -->` markers from `~/.agents/skills/`).
 

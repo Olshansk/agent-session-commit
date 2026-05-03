@@ -200,6 +200,7 @@ swiftlint --fix
 **Source of truth:** `~/workspace/agent-skills/skills/` is the canonical location for all skills.
 
 - When asked to update, edit, or create a skill, **always work in `~/workspace/agent-skills/skills/<skill-name>/`** regardless of the current working directory
+- When any personal skill changes, including `cmd-*`, `makefile`, or `mermaid-render`, **always update `~/workspace/agent-skills/README.md` and relevant agent metadata** so the skill stays discoverable
 - Runtime path `~/.claude/skills/` contains symlinks back to the repo (via `make link-skills`)
 - Edits in the repo propagate instantly through symlinks — no copy step needed
 

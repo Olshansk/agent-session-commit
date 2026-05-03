@@ -84,6 +84,7 @@ Skills I use daily but might rename or delete in the future. I prefix them with 
 | [`cmd-what`](skills/cmd-what/SKILL.md)                                         | Catch the user up on session activity in 3-5 ultra-tight `**label**: explanation` bullets     |
 | [`cmd-rfc-review`](skills/cmd-rfc-review/SKILL.md)                             | Review RFCs for problem clarity, compliance, security, and performance using SCQA             |
 | [`cmd-scope-sweep`](skills/cmd-scope-sweep/SKILL.md)                           | Final pass to identify missed items, edge cases, and risks before closing scope               |
+| [`cmd-store-plan`](skills/cmd-store-plan/SKILL.md)                             | Capture conversation plans, decisions, and action items into structured markdown in `plans/`   |
 | [`makefile`](skills/makefile/SKILL.md)                                         | Create or improve Makefiles with templates (python-uv, fastapi, nodejs, go, flutter)          |
 | [`mermaid-render`](skills/mermaid-render/SKILL.md)                             | Render and display Mermaid diagrams inline in iTerm2 or Ghostty                               |
 
