@@ -6,9 +6,9 @@ disable-model-invocation: false
 
 # Sculpt Code
 
-Reshape code quality across eight dimensions. Scope to branch changes by default, or accept explicit file/directory targets.
+Reshape code quality across nine dimensions. Scope to branch changes by default, or accept explicit file/directory targets.
 
-**Philosophy:** Write code for the next reader (human or agent). Minimize cognitive load. Prefer boring, obvious code over clever code. Every change must preserve business logic unless explicitly told otherwise.
+**Philosophy:** Write code for the next reader (human, agent, or RAG indexer). Minimize cognitive load. Prefer boring, obvious code over clever code. Every change must preserve business logic unless explicitly told otherwise.
 
 ## Determine Scope
 
@@ -125,6 +125,34 @@ Add missing TODOs for: known shortcuts, deferred work, temporary workarounds, an
 - Strategic whitespace: blank lines between logical sections
 - Preserve all `IMPORTANT`, `NOTE`, `CRITICAL`, `DEV_NOTE` markers — clean up the text, not the tag
 - Keep links, issue references, and external references intact
+
+### 9. Agent & Index Readability
+
+Code is increasingly consumed by agents traversing a codebase and RAG pipelines embedding individual chunks. Apply these checks in addition to the structural ones in Dimensions 3 and 4.
+
+**Self-containment:** Each function should be understandable without reading its callers or surrounding file state.
+
+- Flag functions that only make sense in the context of their caller — extract the shared context into a parameter or a named type
+- Avoid implicit shared state (module-level mutation, magic globals) that forces a reader to hold the whole file in mind
+- Prefer explicit inputs and outputs over side effects on outer-scope variables
+
+**Meaningful boundaries:** File and module splits should reflect conceptual units, not arbitrary line-count budgets.
+
+- A file with 3 unrelated utility functions is worse than one slightly larger file with a coherent theme
+- Module names should describe the concept, not the implementation (`auth_tokens.py` > `helpers.py`, `user_processor.py` > `utils.py`)
+- If splitting a file, each half should have a name that a reader can immediately map to a concept
+
+**Embeddable names:** Names must carry enough signal to be useful in isolation — without surrounding code as context.
+
+- Avoid generic names at module or class scope (`process`, `handle`, `run`, `execute`) — add the subject (`process_payment`, `handle_auth_error`)
+- Single-letter variables are fine inside a 3-line loop; flag them inside functions that could be indexed independently
+- Constants should be named for their meaning, not their value (`MAX_RETRY_ATTEMPTS` > `THREE`)
+
+**Branching budget:** High cyclomatic complexity fragments meaning across many paths, making any single path hard to embed or summarize.
+
+- Flag functions with more than ~5 distinct branches (if/elif/except/case arms combined)
+- Prefer dispatch tables, strategy objects, or polymorphism over long if/elif chains when the branches share a shape
+- Each branch arm should be readable as a standalone case — extract arm bodies to named helpers when they exceed ~5 lines
 
 ## Output Format
 
