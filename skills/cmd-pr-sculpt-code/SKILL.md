@@ -6,16 +6,44 @@ disable-model-invocation: false
 
 # Sculpt Code
 
-Reshape code quality across eight dimensions. Scope to branch changes by default (`git diff main...HEAD`), or accept explicit file/directory targets.
+Reshape code quality across eight dimensions. Scope to branch changes by default, or accept explicit file/directory targets.
 
 **Philosophy:** Write code for the next reader (human or agent). Minimize cognitive load. Prefer boring, obvious code over clever code. Every change must preserve business logic unless explicitly told otherwise.
 
+## Determine Scope
+
+**Default (no scope specified):** diff the current branch against the repo's base branch.
+
+Detect the base branch in order — stop at the first success:
+
+1. `gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null`
+2. `git remote show origin 2>/dev/null | grep "HEAD branch" | cut -d: -f2 | xargs`
+3. `git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'`
+
+Do **not** assume `main` or `master`. If all methods fail, ask the user.
+
+Once resolved, run:
+
+```bash
+git diff <base>...HEAD -- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"
+```
+
+**If the user specifies a scope**, use the corresponding command instead:
+
+| Scope | Command | What it covers |
+|---|---|---|
+| `unstaged` | `git diff HEAD -- <excludes>` | All uncommitted changes (staged + unstaged) |
+| `staged` | `git diff --cached -- <excludes>` | Changes staged but not yet committed |
+| `last commit` / `last 1 commit` | `git diff HEAD~1...HEAD -- <excludes>` | Changes in the most recent commit |
+| `last N commits` | `git diff HEAD~N...HEAD -- <excludes>` | Changes in the last N commits |
+| `entire repo` | `git ls-files \| grep -vE "\.(lock\|snap)$\|package-lock\.json\|pnpm-lock\.yaml"` | All tracked source files; no diff — apply all sculpting dimensions to the full current state of the codebase |
+| explicit files/dirs | (user-provided paths) | Only the specified files or directories |
+
+For all diff commands, apply: `-- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"`
+
 ## Instructions
 
-1. **Determine scope** — ask if unclear:
-   - Branch diff: `git diff main...HEAD --name-only`
-   - Staged changes: `git diff --cached --name-only`
-   - Explicit files: user-provided list
+1. **Determine scope** using **Determine Scope** above — ask if still unclear.
 2. **Read all changed files in full** before reviewing — understand existing patterns, not just the diff.
 3. **For Python codebases**, also load `references/python.md` for language-specific guidance.
 4. **Review each dimension** below. For each finding, cite `file_path:line_number`.

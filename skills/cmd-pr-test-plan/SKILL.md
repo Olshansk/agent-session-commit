@@ -10,21 +10,40 @@ agent: general-purpose
 
 Generate a manual test plan for the changes in the current branch. The plan should focus on what a developer/reviewer needs to **manually verify** — real user flows, integration behavior, and observable outcomes. Leave input validation, error branches, and edge cases to unit tests.
 
+## Determine Scope
+
+**Default (no scope specified):** diff the current branch against the repo's base branch.
+
+Detect the base branch in order — stop at the first success:
+
+1. `gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null`
+2. `git remote show origin 2>/dev/null | grep "HEAD branch" | cut -d: -f2 | xargs`
+3. `git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'`
+
+Do **not** assume `main` or `master`. If all methods fail, ask the user.
+
+Once resolved, run:
+
+```bash
+git diff <base>...HEAD -- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"
+```
+
+**If the user specifies a scope**, use the corresponding command instead:
+
+| Scope | Command | What it covers |
+|---|---|---|
+| `unstaged` | `git diff HEAD -- <excludes>` | All uncommitted changes (staged + unstaged) |
+| `last commit` / `last 1 commit` | `git diff HEAD~1...HEAD -- <excludes>` | Changes in the most recent commit |
+| `last N commits` | `git diff HEAD~N...HEAD -- <excludes>` | Changes in the last N commits |
+| `entire repo` | `git ls-files \| grep -vE "\.(lock\|snap)$\|package-lock\.json\|pnpm-lock\.yaml"` | All tracked source files; no diff — generate a full application test plan covering all major flows and integration points |
+
+For all diff commands, apply: `-- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"`
+
 ## Instructions
 
-### Step 1: Detect base branch
+### Step 1: Determine scope
 
-Try these methods in order:
-
-```bash
-BASE_BRANCH=$(gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null)
-```
-
-```bash
-BASE_BRANCH=$(git remote show origin 2>/dev/null | grep "HEAD branch" | cut -d: -f2 | xargs)
-```
-
-If both fail, ask the user.
+Use **Determine Scope** above to resolve the scope and get the diff (or file list for `entire repo`).
 
 ### Step 2: Gather change context
 
@@ -35,6 +54,8 @@ git diff $BASE_BRANCH...HEAD --name-only
 git diff $BASE_BRANCH...HEAD --stat
 git log $BASE_BRANCH..HEAD --oneline
 ```
+
+For non-branch scopes (`unstaged`, `last N commits`), adapt the commands accordingly — replace `$BASE_BRANCH...HEAD` with the scoped range (e.g. `HEAD~N...HEAD`), and replace `git log` with `git log HEAD~N..HEAD --oneline`.
 
 ### Step 3: Detect project tooling
 
@@ -116,6 +137,23 @@ Example: `1a. 🔴 **Pre-register a profile end-to-end**`
 - Error message wording verification
 - Permission/auth edge cases (401/403 responses)
 - Schema validation failures
+
+#### Failure-path test column
+
+For any changed file that has multi-phase logic (e.g., validate → external I/O → DB write), add a "Failure-path" column to the test coverage table:
+
+```
+| File Changed           | Unit | Integration | E2E | Failure-path |
+|------------------------|------|-------------|-----|--------------|
+| routes/account.py      | ❌   | ❌          | ✅  | ❌           |
+| db/display_names.py    | ✅   | ❌          | ❌  | ⏭️           |
+```
+
+**The "Failure-path" column** asks: does at least one test inject a failure into a *non-first* phase of multi-phase work?
+
+- For a route that does `verify token → DB read → external API call → DB write`, a failure-path test mocks the external API to raise and asserts the route logs context and returns a typed error (not a silent 500).
+- Mark `⏭️` only for files with no exception-bearing branches (pure utilities, type definitions).
+- For route handlers and DB helpers with multi-step logic, `❌` is the default until a test exists.
 
 #### Quick smoke test section
 

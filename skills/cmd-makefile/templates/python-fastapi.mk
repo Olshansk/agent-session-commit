@@ -76,6 +76,22 @@ define print_section
 	@printf "\n$(CYAN)$(BOLD)%s$(RESET)\n" "$(1)"
 endef
 
+# Check that the server is running; fails fast with a helpful message.
+# Usage: $(call check_server) at the top of any target that requires a live server.
+define check_server
+	@curl -sf http://$(HOST):$(PORT)$(HEALTH_PATH) > /dev/null 2>&1 || { \
+		printf "$(RED)$(CROSS) Server not running on port $(PORT). Start it first: make run-api-local$(RESET)\n"; \
+		exit 1; \
+	}
+endef
+
+# Kill any process occupying LIVERELOAD_PORT (e.g., a background watchfiles/livereload process).
+# Usage: $(call kill_livereload) before starting a new live-reload session.
+LIVERELOAD_PORT ?= 35729
+define kill_livereload
+	@-lsof -ti :$(LIVERELOAD_PORT) | xargs kill 2>/dev/null || true
+endef
+
 # ============================================================================
 # Preflight
 # ============================================================================
@@ -220,6 +236,42 @@ api-export-spec: ## Export OpenAPI spec to openapi.json
 	$(call print_section,Exporting OpenAPI spec)
 	uv run python scripts/export_openapi_spec.py
 	$(call print_success,OpenAPI spec written to openapi.json)
+
+# ============================================================================
+# Live Reload (optional — uvicorn --reload is usually enough; use this pattern
+# when you have a separate background process like browser-sync or livereload)
+# ============================================================================
+# .PHONY: run-local-live
+#
+# run-local-live: ## Start server with a side-car livereload process (PORT=8000)
+# 	$(call kill_livereload)
+# 	$(call print_section,Starting API + livereload on port $(PORT))
+# 	@uv run livereload & \
+# 	LIVERELOAD_PID=$$!; \
+# 	trap "kill $$LIVERELOAD_PID 2>/dev/null" EXIT; \
+# 	uv run uvicorn $(APP_MODULE) --host $(HOST) --port $(PORT) --reload
+
+# ============================================================================
+# Seed Data (optional — add seed-* targets for datasets your app needs)
+# ============================================================================
+# Pattern: create a timestamped resource, then activate it via a POST endpoint.
+# Requires a running server (check_server guard) and a sample data directory.
+#
+# .PHONY: seed-example
+#
+# seed-example: ## Create example-{timestamp} dataset from example_sample/
+# 	$(call check_server)
+# 	$(eval DATASET := example-$(shell date +%s))
+# 	$(call print_section,Creating dataset: $(DATASET))
+# 	@mkdir -p datasets/$(DATASET)/raw
+# 	@cp example_sample/* datasets/$(DATASET)/raw/
+# 	$(call print_success,Files copied)
+# 	@curl -sf -X POST http://$(HOST):$(PORT)/set-dataset \
+# 		-H 'Content-Type: application/json' \
+# 		-d '{"dataset":"$(DATASET)"}' > /dev/null \
+# 		&& printf "  Dataset active: $(DATASET)\n" \
+# 		|| { printf "$(RED)  Failed to activate dataset$(RESET)\n"; exit 1; }
+# 	$(call print_success,Dataset $(DATASET) ready)
 
 # ============================================================================
 # Testing

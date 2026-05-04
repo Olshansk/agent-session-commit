@@ -12,9 +12,10 @@ Output the result in a markdown file named `PR_DESCRIPTION.md`.
 
 Copy to clipboard: `cat PR_DESCRIPTION.md | pbcopy`
 
+- [Determine Scope](#determine-scope)
 - [Instructions](#instructions)
   - [1. Determine the base branch](#1-determine-the-base-branch)
-  - [2. Analyze the changes against the base branch](#2-analyze-the-changes-against-the-base-branch)
+  - [2. Analyze the changes](#2-analyze-the-changes)
   - [3. Generate the title and description using the format below](#3-generate-the-title-and-description-using-the-format-below)
   - [4. Ask user to approve, edit, or reject](#4-ask-user-to-approve-edit-or-reject)
   - [5. On approval: commit, create/update PR](#5-on-approval-commit-createupdate-pr)
@@ -28,35 +29,46 @@ Copy to clipboard: `cat PR_DESCRIPTION.md | pbcopy`
   - [General Details](#general-details)
 - [Example Output](#example-output)
 
+## Determine Scope
+
+**Default (no scope specified):** diff the current branch against the repo's base branch.
+
+Detect the base branch in order — stop at the first success:
+
+1. `gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null`
+2. `git remote show origin 2>/dev/null | grep "HEAD branch" | cut -d: -f2 | xargs`
+3. `git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'`
+
+Do **not** assume `main` or `master`. If all methods fail, ask the user.
+
+Once resolved, run:
+
+```bash
+git diff <base>...HEAD -- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"
+```
+
+**If the user specifies a scope**, use the corresponding command instead:
+
+| Scope | Command | What it covers |
+|---|---|---|
+| `unstaged` | `git diff HEAD -- <excludes>` | All uncommitted changes (staged + unstaged) |
+| `last commit` / `last 1 commit` | `git diff HEAD~1...HEAD -- <excludes>` | Changes in the most recent commit |
+| `last N commits` | `git diff HEAD~N...HEAD -- <excludes>` | Changes in the last N commits |
+| `entire repo` | `git ls-files \| grep -vE "\.(lock\|snap)$\|package-lock\.json\|pnpm-lock\.yaml"` | All tracked source files — generate a **codebase overview description** instead of a diff-based PR description |
+
+For all diff commands, apply: `-- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"`
+
 ## Instructions
 
 ### 1. Determine the base branch
 
 **If the user passed a branch name as an argument** (e.g. `/cmd-pr-description feature-branch`), use that as `BASE_BRANCH`. Skip auto-detection entirely.
 
-**Otherwise**, auto-detect the repository's default branch. Try these methods in order until one succeeds:
+**For `entire repo` scope:** skip diff analysis; use `git ls-files` and the repo's README/entry points to generate a codebase overview description. Jump directly to Step 3 with that as your source material.
 
-**Method 1 - GitHub CLI**
+**Otherwise**, use the detection methods in **Determine Scope** above to set `BASE_BRANCH`.
 
-```bash
-BASE_BRANCH=$(gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null)
-```
-
-**Method 2 - Git remote**
-
-```bash
-BASE_BRANCH=$(git remote show origin 2>/dev/null | grep "HEAD branch" | cut -d: -f2 | xargs)
-```
-
-**Method 3 - Git symbolic-ref**
-
-```bash
-BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
-```
-
-**IMPORTANT:** Do NOT assume `master` or `main` as a fallback. If all methods fail, ask the user which branch to use as the base.
-
-**Validation:** Regardless of how `BASE_BRANCH` was determined, verify it exists before proceeding:
+**Validation:** Verify `BASE_BRANCH` exists before proceeding:
 
 ```bash
 git rev-parse --verify "$BASE_BRANCH" 2>/dev/null || git rev-parse --verify "origin/$BASE_BRANCH" 2>/dev/null
@@ -64,10 +76,10 @@ git rev-parse --verify "$BASE_BRANCH" 2>/dev/null || git rev-parse --verify "ori
 
 If the branch does not exist locally or on the remote, stop and ask the user to confirm the branch name.
 
-### 2. Analyze the changes against the base branch
+### 2. Analyze the changes
 
 ```bash
-git diff $BASE_BRANCH --stat -- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"
+git diff $BASE_BRANCH...HEAD --stat -- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"
 git log $BASE_BRANCH..HEAD --oneline
 ```
 

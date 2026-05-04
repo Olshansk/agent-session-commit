@@ -8,11 +8,38 @@ disable-model-invocation: false
 
 Post-implementation reflection pass. Run after completing a task to catch loose ends and simplify before calling it done.
 
+## Determine Scope
+
+**Default (no scope specified):** diff the current branch against the repo's base branch.
+
+Detect the base branch in order — stop at the first success:
+
+1. `gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null`
+2. `git remote show origin 2>/dev/null | grep "HEAD branch" | cut -d: -f2 | xargs`
+3. `git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'`
+
+Do **not** assume `main` or `master`. If all methods fail, ask the user.
+
+Once resolved, run:
+
+```bash
+git diff <base>...HEAD -- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"
+```
+
+**If the user specifies a scope**, use the corresponding command instead:
+
+| Scope | Command | What it covers |
+|---|---|---|
+| `unstaged` | `git diff HEAD -- <excludes>` | All uncommitted changes (staged + unstaged) |
+| `last commit` / `last 1 commit` | `git diff HEAD~1...HEAD -- <excludes>` | Changes in the most recent commit |
+| `last N commits` | `git diff HEAD~N...HEAD -- <excludes>` | Changes in the last N commits |
+| `entire repo` | `git ls-files \| grep -vE "\.(lock\|snap)$\|package-lock\.json\|pnpm-lock\.yaml"` | All tracked source files; no diff — run all follow-up questions against the full current state of the codebase |
+
+For all diff commands, apply: `-- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"`
+
 ## Instructions
 
-1. **Determine scope** — use the current branch diff unless the user specifies otherwise:
-   - `git diff main...HEAD --name-only`
-   - Fall back to staged changes if no branch diff exists
+1. **Determine scope** using **Determine Scope** above.
 2. **Read all changed files in full** before reviewing.
 3. **Answer each question below.** For every finding, cite `file_path:line_number` and fix it directly.
 4. **If everything looks good**, say so briefly — don't invent busywork.
@@ -102,3 +129,40 @@ Only use a table when it makes the review easier to scan for the user.
 Do not force a table for single findings or tightly coupled issues where plain bullets are clearer.
 
 If nothing actionable is found, say: "Clean — nothing to follow up on."
+
+### Numbered Action Menu (when 3+ items)
+
+When the follow-up surfaces 3 or more distinct action items, present a numbered action menu after the findings so the user can triage at a glance:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 DO ALL THE THINGS — fix everything below
+🔢 PICK YOUR MENU    — pick specific numbers; e.g., "1, 3, 5"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. 🔧 <fix description>  (`file_path:line`)
+  2. 🔧 <fix description>  (`file_path:line`)
+  3. ✅ <test/verify step>
+  4. 🎨 Run formatting: `make dev-format`
+```
+
+**When the user says "DO ALL THE THINGS"**, execute ALL items in order and then show an Execution Results Matrix:
+
+```
+| # | Item                     | Status | Details                     |
+|---|--------------------------|--------|-----------------------------|
+| 1 | Fix: <description>       | ✅/❌  | What was done / what failed |
+| 2 | Fix: <description>       | ✅/❌  | What was done / what failed |
+| 3 | Formatting               | ✅/❌  | Clean / N issues found      |
+```
+
+**Status icons:**
+
+| Icon | Meaning | When to use |
+|------|---------|-------------|
+| ✅ | Passed | Completed successfully |
+| ❌ | Failed | Ran but produced errors |
+| 🔴 | Blocked | Could not run (missing env, dependency) |
+| ⏭️ | Skipped | Intentionally skipped (not applicable) |
+
+**When the user picks specific numbers**, execute only those. Always show the results matrix after execution — a wall of ✅ is still useful confirmation.

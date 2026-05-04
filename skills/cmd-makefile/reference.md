@@ -686,6 +686,70 @@ api-export-spec: ## Export OpenAPI spec to openapi.json
 
 No `_check-env` needed — the script just imports the app module; it doesn't hit the database. (If your `app.main:app` construction reaches out to a live DB at import time, that's a separate smell worth fixing.)
 
+## HTTP Data Seeding (`seed-*` Pattern)
+
+For projects where seeding means creating a dataset and activating it via a running API, use a timestamped name + POST to activate pattern.
+
+**Define the guard first** — any seed target should fail fast if the server isn't up:
+
+```makefile
+define check_server
+	@curl -sf http://$(HOST):$(PORT)$(HEALTH_PATH) > /dev/null 2>&1 || { \
+		printf "$(RED)$(CROSS) Server not running on port $(PORT). Start it first: make run-api-local$(RESET)\n"; \
+		exit 1; \
+	}
+endef
+```
+
+**Seed target:**
+
+```makefile
+seed-example: ## Create example-{timestamp} dataset from example_sample/
+	$(call check_server)
+	$(eval DATASET := example-$(shell date +%s))
+	$(call print_section,Creating dataset: $(DATASET))
+	@mkdir -p datasets/$(DATASET)/raw
+	@cp example_sample/* datasets/$(DATASET)/raw/
+	$(call print_success,Files copied)
+	@curl -sf -X POST http://$(HOST):$(PORT)/set-dataset \
+		-H 'Content-Type: application/json' \
+		-d '{"dataset":"$(DATASET)"}' > /dev/null \
+		&& printf "  Dataset active: $(DATASET)\n" \
+		|| { printf "$(RED)  Failed to activate dataset$(RESET)\n"; exit 1; }
+	$(call print_success,Dataset $(DATASET) ready)
+```
+
+Key details:
+- `$(eval DATASET := ...)` evaluates `date +%s` at recipe time (not parse time) for a fresh timestamp each run.
+- `check_server` uses a curl health check so the error message names the fix target.
+- The POST + activation step is idempotent on re-run because the name changes each time.
+
+## Live Reload with SIGINT Trapping
+
+When you have a side-car process alongside your server (e.g., `livereload`, `browser-sync`, a custom watcher), use a `trap` to ensure it's killed when the Makefile target exits via Ctrl-C.
+
+```makefile
+LIVERELOAD_PORT ?= 35729
+
+define kill_livereload
+	@-lsof -ti :$(LIVERELOAD_PORT) | xargs kill 2>/dev/null || true
+endef
+
+run-local-live: ## Start server + side-car livereload process
+	$(call kill_livereload)
+	$(call print_section,Starting server + livereload on port $(PORT))
+	@uv run python dev_reload.py & \
+	LIVERELOAD_PID=$$!; \
+	trap "kill $$LIVERELOAD_PID 2>/dev/null" EXIT; \
+	uv run watchfiles 'python app.py --port $(PORT)' --filter python
+```
+
+Key details:
+- `kill_livereload` runs first to clean up any stale process from a previous session.
+- `trap "kill $$PID" EXIT` fires on both clean exit and Ctrl-C (SIGINT), preventing orphaned background processes.
+- `$$LIVERELOAD_PID` escapes the `$` so Make passes a literal `$LIVERELOAD_PID` to the shell (not an empty Make variable).
+- Note: `uvicorn --reload` covers most hot-reload needs for FastAPI. Use this pattern only when you genuinely need a separate background process.
+
 ## Flutter Patterns
 
 ### FLUTTER_DIR for Monorepo vs Standalone

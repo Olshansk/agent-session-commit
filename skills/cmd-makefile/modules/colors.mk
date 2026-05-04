@@ -50,11 +50,26 @@ define print_section
 	@printf "\n$(CYAN)$(BOLD)%s$(RESET)\n" "$(1)"
 endef
 
-define print_section
-	@printf "\n$(CYAN)$(BOLD)%s$(RESET)\n" "$(1)"
-endef
-
 # Alias for backward compatibility
 define print_info_section
 	@printf "\n$(CYAN)$(BOLD)%s$(RESET)\n" "$(1)"
+endef
+
+# Horizontal rule separator
+define print_hr
+	@printf "$(DIM)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(RESET)\n"
+endef
+
+# Phase banner: horizontal rule + emoji + title + horizontal rule
+# Usage: $(call print_phase,🔑,ENV → LOCAL)
+define print_phase
+	@printf "\n$(DIM)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(RESET)\n"
+	@printf "$(BOLD)$(CYAN) $(1)  $(2)$(RESET)\n"
+	@printf "$(DIM)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(RESET)\n\n"
+endef
+
+# Triple-⚠️ critical warning for irreversible / real-money actions
+# Usage: $(call print_critical_warning,MAINNET — REAL MONEY)
+define print_critical_warning
+	@printf "\n$(RED)$(BOLD)⚠️⚠️⚠️  $(1)  ⚠️⚠️⚠️$(RESET)\n"
 endef

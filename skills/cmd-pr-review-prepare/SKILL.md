@@ -15,6 +15,35 @@ Along the way, don't hesitate to ask questions and build plans.
 Be pragmatic.
 Don't over engineer or write long unnecessary documentation.
 
+## Determine Scope
+
+**Default (no scope specified):** diff the current branch against the repo's base branch.
+
+Detect the base branch in order — stop at the first success:
+
+1. `gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null`
+2. `git remote show origin 2>/dev/null | grep "HEAD branch" | cut -d: -f2 | xargs`
+3. `git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'`
+
+Do **not** assume `main` or `master`. If all methods fail, ask the user.
+
+Once resolved, run:
+
+```bash
+git diff <base>...HEAD -- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"
+```
+
+**If the user specifies a scope**, use the corresponding command instead:
+
+| Scope | Command | What it covers |
+|---|---|---|
+| `unstaged` | `git diff HEAD -- <excludes>` | All uncommitted changes (staged + unstaged) |
+| `last commit` / `last 1 commit` | `git diff HEAD~1...HEAD -- <excludes>` | Changes in the most recent commit |
+| `last N commits` | `git diff HEAD~N...HEAD -- <excludes>` | Changes in the last N commits |
+| `entire repo` | `git ls-files \| grep -vE "\.(lock\|snap)$\|package-lock\.json\|pnpm-lock\.yaml"` | All tracked source files; no diff — build full repo context (structure, tech stack, key entry points, recent history) |
+
+For all diff commands, apply: `-- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"`
+
 ## Goals
 
 1. Do a code review
@@ -31,10 +60,8 @@ Don't over engineer or write long unnecessary documentation.
 
 ## Building Context
 
-1. Do a git diff (excluding lock files and package.json)
-   - If a `testnet` branch is available, do a `git diff testnet -- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"` and move on to step 2.
-   - If a `staging` branch is available, do a `git diff staging -- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"` and move on to step 2.
-   - If it is not, do a `git diff main -- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"` and move on to step 2.
+1. Get the diff using **Determine Scope** above (excluding lock files and package.json).
+   - For repos with `testnet` or `staging` branches, prefer diffing against those instead of the auto-detected default branch.
 2. Spend a couple of minutes building context on the changes made
 3. Don't rush
 4. Be thorough
