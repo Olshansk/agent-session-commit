@@ -127,14 +127,33 @@ Use command examples only when they add task-specific value; avoid long command 
 
 ## Communication Format Preferences
 
-When presenting structured comparisons, use markdown tables with emoji status columns:
+**Default to tables** whenever presenting structured data. Prefer a table over a bullet list whenever there are 3+ items with 2+ attributes.
+
+**Always use color-coded severity emoji** in the leftmost column of any table that contains items needing attention. Never bury risk in prose paragraphs.
+
+| Emoji | Severity | When to use |
+|---|---|---|
+| 🔴 | Critical / blocking | Stop and act now; tests broken, data loss risk, merge blocked |
+| 🟠 | High | Fix before merging; likely regression or behavior change |
+| 🟡 | Medium | Review soon; non-blocking but needs eyes |
+| 🟢 | Good / informational | No action needed; explicit all-clear |
+| ✅ | Success | Task completed cleanly |
+| ❌ | Failure | Task failed or item is broken |
+| ⚠️ | Cascading / unknown | Side-effects outside the immediate scope |
+
+**Rules:**
+
+- Any output section that contains risk items MUST use this color system — not free-form prose.
+- When a section has zero risk items, end it with an explicit 🟢 all-clear line rather than omitting the section.
+- Never mix severity into bullet prose when a table fits.
 
 | Use case | Preferred shape |
 |---|---|
 | Test results | Matrix with ✅/❌/🔴/⏭️ status and one-line details |
 | Before/after diffs | Feature diff table with severity emoji |
 | Behavioral matrices | Config/env combinations mapped to expected behavior |
-| Bug summaries | Bug, Root Cause, Fix columns |
+| Bug summaries | 🔴/🟡 severity + Bug, Root Cause, Fix columns |
+| Cascading impact | 🔴/🟡/🟢 Risk table with File, Why, Action columns |
 | Planning/comparison | Tables when comparing 3+ items across 2+ dimensions |
 
 ## General Guidelines in Code

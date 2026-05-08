@@ -222,4 +222,15 @@ After the table, list flags grouped by severity. Each flag MUST start with its e
 - `⚠️` Architectural divergence detected between the two sides
 - `⚠️` Files that weren't in the conflict set but may be affected by the merge
 
-Closing question: **Are there areas of the codebase this merge could affect that aren't in the conflict markers?**
+### Cascading Impact section
+
+Always close with a **🔴 Cascading Impact** section (even if empty). If there are files outside the conflict set that may be broken or need review, present them as a table — not prose:
+
+| 🔴 Risk | File | Why | Action |
+| ------- | ---- | --- | ------ |
+| 🔴 High | `path/to/file.py:L42` | Tests written against old handler pattern; may fail with new FastAPI routes | Run `make dev-test` |
+| 🟡 Medium | `path/to/other.py` | Imports the renamed symbol | Verify import still resolves |
+
+If no cascading impact was found, write: **🟢 No cascading impact detected outside the conflict set.**
+
+Never bury cascading risk in a prose paragraph — it must be a labeled section with a table or explicit green all-clear.
