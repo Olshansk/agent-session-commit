@@ -6,6 +6,7 @@
 - [Documentation](#documentation)
 - [Agent Rules Integration](#agent-rules-integration)
 - [Git Workflow Integration](#git-workflow-integration)
+- [Global Configs](#global-configs)
 - [MCP Server Management](#mcp-server-management)
 - [Context Loading Strategy](#context-loading-strategy)
 - [Development Commands](#development-commands)
@@ -87,6 +88,21 @@ Use command examples only when they add task-specific value; avoid long command 
 - Emoji prefixes: ✨ feat, 🐛 fix, 📝 docs, ♻️ refactor.
 - Run quality checks before commits.
 - Do not commit during active quality check processes.
+
+## Global Configs
+
+**Source of truth for shell and system configuration:** `~/workspace/configs`
+
+- `.zshrc` — main zsh entrypoint; sources all `zshrc.d/` modules in order.
+- `zshrc.d/core/` — PATH setup, shared env, lazy-loaded tools.
+- `zshrc.d/development/` — language toolchains (node at `005.node.sh`, python, postgres, etc.).
+- `zshrc.d/ai-tools/`, `zshrc.d/cloud/`, `zshrc.d/blockchain/`, `zshrc.d/utilities/` — domain-specific config.
+- `scripts/` — shell utility scripts (benchmarking, validation, optimization).
+- `claude/` — Claude-specific config, sessions, skills, tasks, plans.
+- `AGENTS.md` — repo-local agent notes for this config repo.
+
+When debugging PATH, shell startup, or tool-not-found issues, check `zshrc.d/` modules first.
+When modifying shell config, edit files in `~/workspace/configs/zshrc.d/` (not `~/.zshrc` directly).
 
 ## MCP Server Management
 
@@ -243,12 +259,9 @@ End every response with exactly one tag on its own line:
 
 | Tag | Meaning |
 |---|---|
-| `[✅ AGENT - SUCCESS]` | Task completed successfully, all items green |
-| `[✔️ AGENT - DONE]` | Task completed with neutral outcome |
-| `[❌ AGENT - FAILURE]` | Task attempted but failed |
-| `[🔴 AGENT - PARTIAL]` | Some items succeeded but blockers remain |
-| `[⏳ AGENT - WAITING]` | Blocked on external process or async operation |
-| `[⏳ AGENT - INPUT NEEDED]` | Blocked waiting for user input, clarification, or approval |
-| `[🤔 AGENT - UNSURE]` | Approach, results, or requirements are uncertain |
+| `[✅ AGENT - SUCCESS ✅]` | All done, all green |
+| `[🔴 AGENT - HIT AN ERROR 🔴]` | Task failed |
+| `[⚠️ AGENT - PARTIAL COMPLETION ⚠️]` | Some done, blockers remain |
+| `[🤔 AGENT - NEEDS HUMAN INPUT 🤔]` | Needs decision, approval, or clarification |
 
-Use `INPUT NEEDED` when the user still needs to approve a plan or code that has not been committed/deployed. Use `DONE` or `SUCCESS` only when the requested work is fully applied. When unsure, prefer `INPUT NEEDED`.
+Use `NEEDS HUMAN INPUT` when the user still needs to approve a plan or code that has not been committed/deployed. Use `SUCCESS` only when the requested work is fully applied. When unsure, prefer `NEEDS HUMAN INPUT`.
