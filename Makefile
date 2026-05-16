@@ -113,10 +113,6 @@ link-skills: ## Symlink repo + third-party skills into Claude, Gemini, and Codex
 	done
 	@echo "Done"
 
-.PHONY: sync-external-skills
-sync-external-skills: ## Regenerate the 3rd-party skills table in README.md from ~/.agents/skills/
-	@python3 $(CURDIR)/scripts/sync_external_skills.py
-
 .PHONY: list-skills
 list-skills: ## List all skills with descriptions
 	@echo ""

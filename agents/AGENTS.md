@@ -163,6 +163,15 @@ When modifying shell config, edit files in `~/workspace/configs/zshrc.d/` (not `
 - When a section has zero risk items, end it with an explicit 🟢 all-clear line rather than omitting the section.
 - Never mix severity into bullet prose when a table fits.
 
+**Markdown table preview files:**
+
+- When a response includes a Markdown table that is wide or important enough to reuse/share, or has at least 4 columns or at least 6 rows, also write that table to `/tmp/table_<YYYYMMDD_HHMMSS>_<randomsuffix>.md`.
+- Write the exact Markdown table the user sees, preserving links, inline code, and emoji. If the table needs context, add one short Markdown heading above it in the temp file.
+- Immediately below the table in the chat response, add a preview tip using the actual file path.
+- Tip format: `💡 Tip: view the formatted table by running mdtt /tmp/table_20260516_143022_a7f3.md`
+- Example filename: `/tmp/table_20260516_143022_a7f3.md`
+- Only show the `mdtt` tip after the file is created. Skip temp-file creation for small/simple tables, sensitive content, code/documentation examples, and tasks where the user explicitly requests no filesystem writes.
+
 | Use case | Preferred shape |
 |---|---|
 | Test results | Matrix with ✅/❌/🔴/⏭️ status and one-line details |
