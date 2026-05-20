@@ -49,6 +49,7 @@ Then ask your agent to run any installed skill:
 | [`cmd-codex-review-plan`](skills/cmd-codex-review-plan/SKILL.md) | Get a second-opinion plan review from Codex (`codex exec`) before exiting plan mode |
 | [`cmd-codex-review-unstaged`](skills/cmd-codex-review-unstaged/SKILL.md) | Have Codex review the working-tree diff and synthesize a prioritized iteration plan |
 | [`cmd-docs-idiot-proof`](skills/cmd-docs-idiot-proof/SKILL.md) | Simplify documentation for clarity and scannability with approval-gated edits |
+| [`cmd-done-check`](skills/cmd-done-check/SKILL.md) | Ask the agent whether it finished everything — a lightweight completeness gate for any task |
 | [`cmd-email-md`](skills/cmd-email-md/SKILL.md) | Convert markdown to email-safe HTML with inline styles and cross-client compatibility |
 | [`cmd-gh-issue`](skills/cmd-gh-issue/SKILL.md) | Create structured GitHub issues from conversation context using `gh` CLI |
 | [`cmd-golden-tests`](skills/cmd-golden-tests/SKILL.md) | Set up or extend golden/snapshot tests: fixture design, Makefile targets, snapshot storage, diff workflow, and update protocol |

@@ -272,5 +272,6 @@ End every response with exactly one tag on its own line:
 | `[🔴 AGENT - HIT AN ERROR 🔴]` | Task failed |
 | `[⚠️ AGENT - PARTIAL COMPLETION ⚠️]` | Some done, blockers remain |
 | `[🤔 AGENT - NEEDS HUMAN INPUT 🤔]` | Needs decision, approval, or clarification |
+| `[🚩 AGENT - FLAGGED & NEEDS REVIEW 🚩]` | Work complete but a specific item was flagged — review before treating as done |
 
-Use `NEEDS HUMAN INPUT` when the user still needs to approve a plan or code that has not been committed/deployed. Use `SUCCESS` only when the requested work is fully applied. When unsure, prefer `NEEDS HUMAN INPUT`.
+Use `NEEDS HUMAN INPUT` when the user still needs to approve a plan or code that has not been committed/deployed. Use `FLAGGED & NEEDS REVIEW` when the task is done but the response ends with a concrete note or caveat the user should act on (e.g. a placeholder command, an assumed value, a missing dependency). Use `SUCCESS` only when the requested work is fully applied with no open flags. When unsure, prefer `NEEDS HUMAN INPUT`.
